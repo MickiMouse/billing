@@ -10,7 +10,7 @@
                flat
                hide-no-data
                hide-details
-               label="Поиск по урокам"
+               label="Search"
                solo-inverted
        ></v-autocomplete>
    </v-layout>

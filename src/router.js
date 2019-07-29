@@ -6,34 +6,18 @@ Vue.use(Router)
 const router = new Router({
     mode: 'history',
     routes: [
-        { path: '/', redirect: { name: 'modules' }},
+        { path: '/', redirect: { name: 'dashboard' }},
         {
-            path: '/modules',
-            name: 'modules',
+            path: '/dashboard',
+            name: 'dashboard',
             component: () => import('./views/Home/Home.vue'),
             meta:{
-                title: 'Модули',
+                title: 'dashboard',
             },
             children:[
 
             ]
         },
-        {
-            path: '/profile',
-            name: 'profile',
-            component: () => import('./views/Profile/Profile.vue'),
-            meta:{
-                title: 'Профиль',
-            },
-        },
-        {
-            path: '/modules/:id',
-            name: 'lessons',
-            component: () => import('./views/Modules/Modules.vue'),
-            meta:{
-                title: 'Уроки'
-            }
-        }
     ]
 });
 router.beforeEach((to, from, next) => {
