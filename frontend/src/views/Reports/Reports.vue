@@ -30,7 +30,7 @@
                     crossdomain: true
                 };
             axios.get(' http://localhost:8000/api/test/', config)
-                .then(function (response) {
+                .then( (response)=> {
                     console.log(response.data);
                     this.info = response.data[0]
                 });
