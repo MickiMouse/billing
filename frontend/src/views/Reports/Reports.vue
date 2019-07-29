@@ -29,7 +29,7 @@
             xhr.open("GET", "http://localhost:8000/api/test/", true);
             xhr.onload = function () {
                 console.log(JSON.parse(xhr.responseText))
-               this.info = JSON.parse(xhr.responseText);
+               this.info = JSON.parse(xhr.responseText)[0];
             };
             xhr.send();
         }
