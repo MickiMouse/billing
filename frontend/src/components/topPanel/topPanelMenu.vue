@@ -38,8 +38,12 @@
         data(){
             return{
                 items: [
-                    {title: 'Dashboard', icon: 'assignment',route: 'dashboard'},
-                    {title: 'Профиль', icon: 'person', route: 'profile'}
+                    {title: 'Dashboard', icon: 'bar_chart',route: 'dashboard'},
+                    {title: 'Subscribers', icon: 'person', route: 'subscribers'},
+                    {title: 'Cards', icon: 'card_membership', route: 'cards'},
+                    {title: 'Packages', icon: 'archive', route: 'packages'},
+                    {title: 'Resellers', icon: 'people', route: 'resellers'},
+                    {title: 'Reports', icon: 'report', route: 'reports'},
                 ],
             }
         },
