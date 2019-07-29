@@ -26,7 +26,9 @@
         },
         mounted() {
             var config = {
-                headers: {'Access-Control-Allow-Origin': '*'}
+                headers: {  'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json',},
+                crossDomain: true
 
             };
             axios
