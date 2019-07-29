@@ -27,7 +27,7 @@
         mounted() {
 
                 var config = {
-                    headers: {'Access-Control-Allow-Origin': '*'}
+                    crossdomain: true
                 };
             axios.get(' http://localhost:8000/api/test/', config)
                 .then(function (response) {
