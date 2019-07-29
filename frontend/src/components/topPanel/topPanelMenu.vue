@@ -38,7 +38,7 @@
         data(){
             return{
                 items: [
-                    {title: 'Модули', icon: 'assignment',route: 'modules'},
+                    {title: 'Dashboard', icon: 'assignment',route: 'dashboard'},
                     {title: 'Профиль', icon: 'person', route: 'profile'}
                 ],
             }
