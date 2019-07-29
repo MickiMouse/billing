@@ -25,16 +25,12 @@
             };
         },
         mounted() {
-            var config = {
-                headers: {  'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json',},
-                crossDomain: true
-
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://localhost/api/test", true);
+            xhr.onload = function () {
+                console.log(xhr.responseText);
             };
-            axios.defaults.headers.get['Content-Type'] ='application/x-www-form-urlencoded';
-            axios
-                .get('http://localhost:8000/api/test/',config)
-                .then(response => (this.info = response));
+            xhr.send();
         }
     }
 </script>
