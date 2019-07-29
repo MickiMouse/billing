@@ -25,13 +25,15 @@
             };
         },
         mounted() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "http://localhost:8000/api/test/", true);
-            xhr.onload = () =>{
-                console.log(JSON.parse(xhr.responseText))
-               this.info = JSON.parse(xhr.responseText)[0];
-            };
-            xhr.send();
+
+                var config = {
+                    headers: {'Access-Control-Allow-Origin': '*'}
+                };
+            axios.get(' http://localhost:8000/api/test/', config)
+                .then(function (response) {
+                    console.log(response.data);
+                    this.info = JSON.parse(response.data)[0]
+                });
         }
     }
 </script>
