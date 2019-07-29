@@ -28,7 +28,8 @@
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "http://localhost:8000/api/test/", true);
             xhr.onload = function () {
-               this.info = xhr.responseText;
+                console.log(JSON.parse(xhr.responseText))
+               this.info = JSON.parse(xhr.responseText);
             };
             xhr.send();
         }
