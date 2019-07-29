@@ -30,7 +30,7 @@
 
             };
             axios
-                .get('http://localhost/api/test/',config)
+                .get('http://localhost:8000/api/test/',config)
                 .then(response => (this.info = response));
         }
     }
