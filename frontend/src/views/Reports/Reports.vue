@@ -31,7 +31,7 @@
                 crossDomain: true
 
             };
-            axios.defaults.headers.post['Content-Type'] ='application/x-www-form-urlencoded';
+            axios.defaults.headers.get['Content-Type'] ='application/x-www-form-urlencoded';
             axios
                 .get('http://localhost:8000/api/test/',config)
                 .then(response => (this.info = response));
