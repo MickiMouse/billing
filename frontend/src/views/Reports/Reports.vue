@@ -32,7 +32,7 @@
             axios.get(' http://localhost:8000/api/test/', config)
                 .then(function (response) {
                     console.log(response.data);
-                    this.info = JSON.parse(response.data)[0]
+                    this.info = response.data[0]
                 });
         }
     }
