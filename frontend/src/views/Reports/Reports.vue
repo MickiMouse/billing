@@ -30,7 +30,7 @@
 
             };
             axios
-                .get('htpp://localhost/api/test/',config)
+                .get('https://9208c4fc.ngrok.io/api/test/',config)
                 .then(response => (this.info = response));
         }
     }
