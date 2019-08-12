@@ -284,7 +284,7 @@ class SubscriberDeleteView(generics.DestroyAPIView):
 class SubscriberUpdateCardsView(APIView):
     permission_classes = [IsOwner, IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, pk):
         user = request.user
         cards = user.cards.filter(subscriber=None)
         serializer = CardSerializer(cards, many=True)
@@ -306,8 +306,10 @@ class SubscriberUpdateCardsView(APIView):
                             status=HTTP_404_NOT_FOUND)
         for i in range(len(querysetcard)):
             data.append(querysetcard[i])
-        subscriber.cards.set(data)
+        if subscriber.balance - querysetcard.first().price() < 0:
+            return Response({'detail': 'Cannot add card, balance will be < 0'})
         subscriber.balance -= querysetcard.first().price()
+        subscriber.cards.set(data)
         subscriber.save()
         serializer = SubscriberEditCardsSerializer(subscriber)
         return Response(serializer.data)
