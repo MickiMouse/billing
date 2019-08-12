@@ -16,7 +16,7 @@ Vue.use(VueSession)
 Vue.config.productionTip = false
 Vue.use(VueApexCharts)
 Vue.component('apexchart', VueApexCharts)
-Vue.prototype.$hostname = '157.230.98.28';
+Vue.prototype.$hostname = '';
 new Vue({
     router,
     store,
