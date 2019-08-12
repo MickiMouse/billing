@@ -351,8 +351,7 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
             user.balance -= new_balance
         else:
             if user.credit > diff:
-                raise generics.ValidationError(
-                    'Your balance cannot be less your credit')
+                return Response({'detail': 'Your balance cannot be less your credit'})
             else:
                 subscriber.balance += new_balance
                 user.balance -= new_balance
