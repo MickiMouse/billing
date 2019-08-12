@@ -13,7 +13,7 @@ SECRET_KEY = '(971f##xbymbs88^-l)%u4qil1y8i^z#vj4kzl=n+e9pif&7+3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -25,8 +25,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main.apps.MainConfig',
+    'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
-    'main.apps.MainConfig'
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -37,7 +40,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
 
@@ -70,9 +73,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tv_db',
-        'USER': 'tv_admin',
-        'PASSWORD': 'qwerty',
+        'NAME': 'billing_system',
+        'USER': 'djadmin',
+        'PASSWORD': 'qwerty123',
         'HOST': '127.0.0.1',
         'PORT': 5432,
     }
@@ -97,9 +100,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SSSSS = os.environ.get('SSSSS') or '00000'
 
-# Internationalization
-# https://docs.djangoproject.com/en/2.2/topics/i18n/
+AUTH_USER_MODEL = 'main.Reseller'
+
+EMAIL_USE_TLS = True
+
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_HOST_USER = 'dpashnev175@gmail.com'
+
+EMAIL_HOST_PASSWORD = 'vfhufhbnf13200014'
+
+EMAIL_PORT = 587
 
 LANGUAGE_CODE = 'en-us'
 
@@ -109,10 +122,23 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
+DATE_FORMAT = "%m/%d/%Y"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
+DATETIME_FORMAT = "%m/%d/%Y %H:%M:%S"
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
+    "DATETIME_INPUT_FORMATS": ["%m/%d/%Y %H:%M:%S"],
+}
