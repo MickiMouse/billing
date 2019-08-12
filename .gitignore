@@ -1,7 +1,15 @@
 .DS_Store
 node_modules
 /dist
+
+#backend
 venv
+__pycache__/
+*/__pycache__/
+*.py[cod]
+.pyc
+migrations/
+
 # local env files
 .env.local
 .env.*.local
