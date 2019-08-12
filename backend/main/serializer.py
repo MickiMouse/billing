@@ -1,23 +1,28 @@
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 
-from .models import Subscriber, Card, user_registrated
+from .models import (
+    Subscriber,
+    Card,
+    Packet,
+    Bouquet,
+    user_registrated,
+)
 
 User = get_user_model()
 
 
 class ResellerCreateSerializer(serializers.ModelSerializer):
-    """Serializer for Reseller"""
+    """Serializer for Register Reseller"""
     password2 = serializers.CharField(min_length=8)
 
     class Meta:
         model = User
-        fields = [
-            'username',
-            'email',
-            'password',
-            'password2',
-        ]
+        fields = ('username',
+                  'email',
+                  'password',
+                  'password2')
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -28,6 +33,9 @@ class ResellerCreateSerializer(serializers.ModelSerializer):
         email = value
         if not email:
             raise serializers.ValidationError('Field is required')
+        user = User.objects.filter(email=email)
+        if user:
+            raise serializers.ValidationError('Please use different email')
         return value
 
     def validate_password2(self, value):
@@ -52,20 +60,10 @@ class ResellerCreateSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-class SubscriberSerializer(serializers.ModelSerializer):
-    """Serializer for Subscriber"""
-
+class ResellerShortDescriptionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Subscriber
-        fields = '__all__'
-
-
-class CardSerializer(serializers.ModelSerializer):
-    """Serializer for Card"""
-
-    class Meta:
-        model = Card
-        fields = '__all__'
+        model = User
+        fields = ('pk', 'email')
 
 
 class ResellerSerializer(serializers.ModelSerializer):
@@ -74,3 +72,240 @@ class ResellerSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    """Serializer for Token"""
+
+    class Meta:
+        model = Token
+        fields = '__all__'
+
+
+class BouquetSerializer(serializers.ModelSerializer):
+    """Serializer for Bouquet"""
+
+    class Meta:
+        model = Bouquet
+        fields = '__all__'
+
+
+class PackageListSerializer(serializers.ModelSerializer):
+    """Serializer for Packet"""
+
+    class Meta:
+        model = Packet
+        fields = ('pk',
+                  'header',
+                  'age_limit',
+                  'tariff')
+
+
+class CardShortDescriptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Card
+        fields = ('pk',
+                  'label')
+
+
+class PackageDetailSerializer(serializers.ModelSerializer):
+    """Serializer for detail of package"""
+    bouquets = BouquetSerializer(many=True)
+    cards = CardShortDescriptionSerializer()
+
+    class Meta:
+        model = Packet
+        fields = ('header',
+                  'age_limit',
+                  'tariff',
+                  'cards',
+                  'bouquets')
+
+
+class PackageCreateSerializer(serializers.ModelSerializer):
+    """Serializer for adding package"""
+
+    class Meta:
+        model = Packet
+        fields = ('header',
+                  'age_limit',
+                  'tariff',
+                  'bouquets')
+
+    def validate(self, attrs):
+        header = attrs.get('header')
+        age_limit = attrs.get('age_limit')
+        tariff = attrs.get('tariff')
+        if tariff < 0:
+            raise serializers.ValidationError('Tariff cannot be less zero')
+        if not header or not age_limit or not tariff:
+            raise serializers.ValidationError('Filed is required')
+        return attrs
+
+
+class PackageDeleteSerializer(serializers.ModelSerializer):
+    """Delete package"""
+
+    class Meta:
+        model = Packet
+        fields = '__all__'
+
+
+class PackageEditSerializer(serializers.ModelSerializer):
+    """Edit serializer"""
+
+    class Meta:
+        model = Packet
+        fields = ('tariff',
+                  'bouquets')
+
+    def validate(self, attrs):
+        tariff = attrs.get('tariff')
+        if tariff < 0:
+            raise serializers.ValidationError('Tariff cannot be less zero')
+        return attrs
+
+
+class SubscriberSerializer(serializers.ModelSerializer):
+    """Serializer for Subscriber"""
+    cards = CardShortDescriptionSerializer(many=True)
+    reseller = ResellerShortDescriptionSerializer()
+
+    class Meta:
+        model = Subscriber
+        fields = ('pk',
+                  'first_name',
+                  'last_name',
+                  'email',
+                  'balance',
+                  'reseller',
+                  'cards')
+
+
+class CardSerializer(serializers.ModelSerializer):
+    """Serializer for Card"""
+
+    class Meta:
+        model = Card
+        fields = ('pk',
+                  'created_at',
+                  'last_change',
+                  'expired_date',
+                  'status',
+                  'label')
+
+
+class SubscriberDetailSerializer(serializers.ModelSerializer):
+    """Serializer for detail of subscriber"""
+    cards = CardSerializer(many=True)
+    reseller = ResellerShortDescriptionSerializer()
+
+    class Meta:
+        model = Subscriber
+        fields = ('id',
+                  'first_name',
+                  'last_name',
+                  'address',
+                  'telephone',
+                  'email',
+                  'balance',
+                  'reseller',
+                  'cards')
+
+
+class SubscriberCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscriber
+        fields = ('first_name',
+                  'last_name',
+                  'email',
+                  'address',
+                  'telephone')
+
+
+class SubscriberEditCardsSerializer(serializers.ModelSerializer):
+    cards = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Subscriber
+        fields = ('cards',)
+
+
+class SubscriberEditBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscriber
+        fields = ('balance',)
+
+    def validate(self, attrs):
+        balance = attrs['balance']
+        if balance <= 0:
+            raise serializers.ValidationError('Balance cannot be less or equal zero')
+        return attrs
+
+
+class CardCreateSerializer(serializers.ModelSerializer):
+    """Serializer for adding card"""
+
+    class Meta:
+        model = Card
+        fields = '__all__'
+
+
+class CardDetailSerializer(serializers.ModelSerializer):
+    packages = PackageListSerializer(many=True)
+    reseller = ResellerShortDescriptionSerializer()
+    subscriber = SubscriberSerializer()
+
+    class Meta:
+        model = Card
+        fields = ('pk',
+                  'created_at',
+                  'last_change',
+                  'expired_date',
+                  'status',
+                  'label',
+                  'packages',
+                  'price',
+                  'reseller',
+                  'subscriber')
+
+
+class PasswordRequestSerializer(serializers.ModelSerializer):
+    """Form for email"""
+    email = serializers.EmailField(label='Email address', required=True)
+
+    class Meta:
+        model = User
+        fields = ('email',)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        user = User.objects.get(email=email)
+        if user:
+            return attrs
+        else:
+            raise serializers.ValidationError('There is no user with such email')
+
+
+class PasswordSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(label='Repeat password', min_length=8, required=True)
+
+    class Meta:
+        model = User
+        fields = ('password',
+                  'password2')
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
+
+    def validate(self, attrs):
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        if not password or not password2:
+            raise serializers.ValidationError('Field is required')
+        if password != password2:
+            raise serializers.ValidationError('Fields must be equal')
+        return attrs

@@ -13,7 +13,7 @@ SECRET_KEY = '(971f##xbymbs88^-l)%u4qil1y8i^z#vj4kzl=n+e9pif&7+3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -100,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SSSSS = os.environ.get('SSSSS')
+SSSSS = os.environ.get('SSSSS') or '00000'
 
 AUTH_USER_MODEL = 'main.Reseller'
 
@@ -122,7 +122,11 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
+
+DATE_FORMAT = "%m/%d/%Y"
+
+DATETIME_FORMAT = "%m/%d/%Y %H:%M:%S"
 
 STATIC_URL = '/static/'
 
@@ -135,7 +139,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
+    "DATETIME_INPUT_FORMATS": ["%m/%d/%Y %H:%M:%S"],
 }
