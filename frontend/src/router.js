@@ -6,17 +6,30 @@ Vue.use(Router)
 const router = new Router({
     mode: 'history',
     routes: [
-        { path: '/', redirect: { name: 'dashboard' }},
+        { path: '/', redirect: { name: 'login' }},
+        {
+            path: '/register',
+            name: 'register',
+            component: () => import('./views/Register/Register.vue'),
+            meta:{
+                title: 'Register',
+            },
+        },
+        {
+            path: '/login',
+            name: 'login',
+            component: () => import('./views/Login/Login.vue'),
+            meta:{
+                title: 'Login',
+            },
+        },
         {
             path: '/dashboard',
             name: 'dashboard',
             component: () => import('./views/Home/Home.vue'),
             meta:{
-                title: 'dashboard',
+                title: 'Dashboard',
             },
-            children:[
-
-            ]
         },
         {
             path: '/subscribers',
@@ -25,60 +38,70 @@ const router = new Router({
             meta:{
                 title: 'Subscribers',
             },
-            children:[
-
-            ]
+        },
+        {
+            path: '/subscribers/:id/details',
+            name: 'subscribers',
+            component: () => import('./views/Subscribers/SubscribersDetails.vue'),
+            meta: {
+                title: 'Subscribers',
+            },
         },
         {
             path: '/cards',
             name: 'cards',
             component: () => import('./views/Cards/Cards.vue'),
             meta:{
-                title: 'cards',
+                title: 'Cards',
             },
-            children:[
-
-            ]
+        },
+        {
+            path: '/cards/:id/details',
+            name: 'cards',
+            component: () => import('./views/Cards/CardsDetails.vue'),
+            meta: {
+                title: 'Cards',
+            },
         },
         {
             path: '/packages',
             name: 'packages',
             component: () => import('./views/Packages/Packages.vue'),
             meta:{
-                title: 'packages',
+                title: 'Packages',
             },
-            children:[
-
-            ]
+        },
+        {
+            path: '/packages/:id/details',
+            name: 'packages',
+            component: () => import('./views/Packages/PackagesDetails.vue'),
+            meta: {
+                title: 'Packages',
+            },
         },
         {
             path: '/resellers',
             name: 'resellers',
             component: () => import('./views/Resellers/Resellers.vue'),
             meta:{
-                title: 'resellers',
+                title: 'Resellers',
             },
-            children:[
-
-            ]
         },
         {
             path: '/reports',
             name: 'reports',
             component: () => import('./views/Reports/Reports.vue'),
             meta:{
-                title: 'reports',
+                title: 'Reports',
             },
-            children:[
-
-            ]
         },
     ]
 });
 router.beforeEach((to, from, next) => {
     console.log(to);
-    document.title = to.meta.title + ' | SMART-TV';
+    document.title = to.meta.title + ' | Ripple';
     next()
 });
+
 export default router;
 

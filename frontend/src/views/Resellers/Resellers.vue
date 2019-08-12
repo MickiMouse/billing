@@ -17,7 +17,12 @@
 
 <script>
     export default {
-        name: "Resellers"
+        name: "Resellers",
+        beforeCreate() {
+            if (!this.$session.exists()) {
+                this.$router.push('/')
+            }
+        },
     }
 </script>
 

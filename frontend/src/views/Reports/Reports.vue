@@ -24,6 +24,11 @@
                 info: null
             };
         },
+        beforeCreate() {
+            if (!this.$session.exists()) {
+                this.$router.push('/')
+            }
+        },
         mounted() {
 
                 var config = {

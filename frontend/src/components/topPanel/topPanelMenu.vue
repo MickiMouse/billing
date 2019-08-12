@@ -9,7 +9,7 @@
             <v-list-tile>
                 <v-list-tile-content>
                     <v-list-tile-title>
-                        <span>Меню</span>
+                        <span>Menu</span>
                     </v-list-tile-title>
                 </v-list-tile-content>
             </v-list-tile>
@@ -38,12 +38,12 @@
         data(){
             return{
                 items: [
-                    {title: 'Dashboard', icon: 'bar_chart',route: 'dashboard'},
-                    {title: 'Subscribers', icon: 'person', route: 'subscribers'},
-                    {title: 'Cards', icon: 'card_membership', route: 'cards'},
-                    {title: 'Packages', icon: 'archive', route: 'packages'},
-                    {title: 'Resellers', icon: 'people', route: 'resellers'},
-                    {title: 'Reports', icon: 'report', route: 'reports'},
+                    {title: 'Dashboard', icon: 'bar_chart',route: '/dashboard'},
+                    {title: 'Subscribers', icon: 'person', route: '/subscribers'},
+                    {title: 'Cards', icon: 'card_membership', route: '/cards'},
+                    {title: 'Packages', icon: 'archive', route: '/packages'},
+                    {title: 'Resellers', icon: 'people', route: '/resellers'},
+                    {title: 'Reports', icon: 'description', route: '/reports'},
                 ],
             }
         },
