@@ -32,9 +32,9 @@
                         <td class="text-xs-left">
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on }">
-                                    <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/details/`" color="info" fab
-                                           small dark>
-                                        <v-icon>info</v-icon>
+                                    <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/details/`" color="info"
+                                           small icon ripple dark>
+                                        <v-icon small>info</v-icon>
                                     </v-btn>
                                 </template>
                                 <span>Detail</span>

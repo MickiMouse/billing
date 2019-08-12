@@ -115,8 +115,8 @@
                                 <v-list-tile-avatar>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
-                                            <v-btn v-on="on" :to="`/cards/${details.cards.pk}/details/`" color="info" fab small dark>
-                                                <v-icon>info</v-icon>
+                                            <v-btn v-on="on" :to="`/cards/${details.cards.pk}/details/`" color="info" ripple icon small dark>
+                                                <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
                                         <span>Detail</span>
@@ -161,16 +161,16 @@
                             <td class="text-xs-left no-wrap">
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/details/`" color="info" fab small dark>
-                                            <v-icon>info</v-icon>
+                                        <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/details/`" color="info" ripple icon small dark>
+                                            <v-icon small>info</v-icon>
                                         </v-btn>
                                     </template>
                                     <span>Detail</span>
                                 </v-tooltip>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" fab small dark>
-                                            <v-icon>close</v-icon>
+                                        <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" ripple icon small dark>
+                                            <v-icon small>close</v-icon>
                                         </v-btn>
                                     </template>
                                     <span>Remove</span>

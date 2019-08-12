@@ -136,10 +136,16 @@
                         this.text = "Connection error";
                         console.log(error)
                         this.snackbar = true;
+                        /** test **/
                     });
                 }
 
             }
+        },
+        beforeCreate(){
+            this.$session.destroy();
+            this.$router.push('/');
+            axios.defaults.headers.common['Authorization'] = '';
         }
     }
 </script>

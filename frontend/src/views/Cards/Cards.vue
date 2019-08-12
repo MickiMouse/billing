@@ -33,9 +33,9 @@
                         <td class="text-xs-left">
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on }">
-                                    <v-btn v-on="on" color="info" fab small dark
+                                    <v-btn v-on="on" color="info" ripple icon small dark
                                            :to="`/cards/${props.item.pk}/details/`" >
-                                        <v-icon>info</v-icon>
+                                        <v-icon small>info</v-icon>
                                     </v-btn>
                                 </template>
                                 <span>Detail</span>

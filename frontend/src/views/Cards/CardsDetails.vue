@@ -58,6 +58,18 @@
                                     @click=""
                             >
                                 <v-list-tile-avatar>
+                                    <v-icon class="grey lighten-1 white--text">account_balance_wallet</v-icon>
+                                </v-list-tile-avatar>
+                                <v-list-tile-content>
+                                    <v-list-tile-title>Price</v-list-tile-title>
+                                    <v-list-tile-sub-title>{{details.price}}</v-list-tile-sub-title>
+                                </v-list-tile-content>
+                            </v-list-tile>
+                            <v-list-tile
+                                    avatar
+                                    @click=""
+                            >
+                                <v-list-tile-avatar>
                                     <v-icon class="grey lighten-1 white--text">event_busy</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
@@ -139,8 +151,8 @@
                                 <v-list-tile-avatar>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
-                                            <v-btn v-on="on" :to="`/subscribers/${details.subscriber.pk}/details/`" color="info" fab small dark>
-                                                <v-icon>info</v-icon>
+                                            <v-btn v-on="on" :to="`/subscribers/${details.subscriber.pk}/details/`" color="info" ripple icon small dark>
+                                                <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
                                         <span>Detail</span>
@@ -161,8 +173,8 @@
                                 <v-list-tile-avatar>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
-                                            <v-btn v-on="on" :to="`/resellers/${details.reseller.pk}/details/`" color="info" fab small dark>
-                                                <v-icon>info</v-icon>
+                                            <v-btn v-on="on" :to="`/resellers/${details.reseller.pk}/details/`" color="info" ripple icon small dark>
+                                                <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
                                         <span>Detail</span>
@@ -185,16 +197,16 @@
                             <td class="text-xs-left no-wrap">
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info" fab small dark>
-                                            <v-icon>info</v-icon>
+                                        <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info" ripple icon small dark>
+                                            <v-icon small>info</v-icon>
                                         </v-btn>
                                     </template>
                                     <span>Detail</span>
                                 </v-tooltip>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" fab small dark>
-                                            <v-icon>close</v-icon>
+                                        <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" ripple icon small dark>
+                                            <v-icon small>close</v-icon>
                                         </v-btn>
                                     </template>
                                     <span>Remove</span>
@@ -214,16 +226,16 @@
                             <td class="text-xs-left no-wrap">
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info" fab small dark>
-                                            <v-icon>info</v-icon>
+                                        <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info" ripple icon small dark>
+                                            <v-icon small>info</v-icon>
                                         </v-btn>
                                     </template>
                                     <span>Detail</span>
                                 </v-tooltip>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" @click="addPackage(props.item.pk)" color="success" fab small dark>
-                                            <v-icon>add</v-icon>
+                                        <v-btn v-on="on" @click="addPackage(props.item.pk)" color="success" ripple icon small dark>
+                                            <v-icon small>add</v-icon>
                                         </v-btn>
                                     </template>
                                     <span>Add</span>
