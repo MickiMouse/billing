@@ -1,1 +1,29 @@
-<!DOCTYPE html><html lang=ru><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><link rel=icon href=/home/denis/billing-system/frontend/dist/favicon.ico><title>smm-real-2</title><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Material+Icons"><link href=/home/denis/billing-system/frontend/dist/css/chunk-195c0be2.c69a78af.css rel=prefetch><link href=/home/denis/billing-system/frontend/dist/css/chunk-1acbe939.c69a78af.css rel=prefetch><link href=/home/denis/billing-system/frontend/dist/css/chunk-6617ff9c.c69a78af.css rel=prefetch><link href=/home/denis/billing-system/frontend/dist/css/chunk-765d0897.75074c67.css rel=prefetch><link href=/home/denis/billing-system/frontend/dist/css/chunk-8774b51a.c69a78af.css rel=prefetch><link href=/home/denis/billing-system/frontend/dist/css/chunk-dacc27ac.c69a78af.css rel=prefetch><link href=/home/denis/billing-system/frontend/dist/js/chunk-195c0be2.00dde285.js rel=prefetch><link href=/home/denis/billing-system/frontend/dist/js/chunk-1acbe939.ff649627.js rel=prefetch><link href=/home/denis/billing-system/frontend/dist/js/chunk-6617ff9c.c842e006.js rel=prefetch><link href=/home/denis/billing-system/frontend/dist/js/chunk-765d0897.d59bb701.js rel=prefetch><link href=/home/denis/billing-system/frontend/dist/js/chunk-8774b51a.931c4ea0.js rel=prefetch><link href=/home/denis/billing-system/frontend/dist/js/chunk-dacc27ac.c79d67d4.js rel=prefetch><link href=/home/denis/billing-system/frontend/dist/css/app.ae06f614.css rel=preload as=style><link href=/home/denis/billing-system/frontend/dist/css/chunk-vendors.75ca9185.css rel=preload as=style><link href=/home/denis/billing-system/frontend/dist/js/app.b203c7ff.js rel=preload as=script><link href=/home/denis/billing-system/frontend/dist/js/chunk-vendors.bf6c6c48.js rel=preload as=script><link href=/home/denis/billing-system/frontend/dist/css/chunk-vendors.75ca9185.css rel=stylesheet><link href=/home/denis/billing-system/frontend/dist/css/app.ae06f614.css rel=stylesheet></head><body><noscript><strong>We're sorry but smm-real-2 doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id=app></div><script src=/home/denis/billing-system/frontend/dist/js/chunk-vendors.bf6c6c48.js></script><script src=/home/denis/billing-system/frontend/dist/js/app.b203c7ff.js></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+<script>
+    $.ajax({
+        url: "http://localhost:8000/api/test/",
+        type: "GET",
+        crossDomain: true,
+        dataType: "json",
+        success: function (response) {
+            console.log(response)
+            var resp = JSON.parse(response)
+            alert(resp.status);
+        },
+        error: function (xhr, status) {
+            alert("error");
+        }
+    });
+</script>
+</body>
+</html>
