@@ -76,40 +76,6 @@
                                     <v-list-tile-title>Expired date</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.expired_date}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
-                                <v-list-tile-action>
-                                    <v-dialog v-model="dialog" persistent max-width="600px">
-                                        <template v-slot:activator="{ on }">
-                                            <v-btn icon ripple v-on="on">
-                                                <v-icon color="grey lighten-1">edit</v-icon>
-                                            </v-btn>
-                                        </template>
-                                        <v-card>
-                                            <v-card-text>
-                                                <v-container grid-list-md>
-                                                    <v-layout wrap>
-
-                                                        <v-flex xs12>
-                                                            <v-form
-                                                                    ref="form">
-                                                                <v-text-field
-                                                                        label="Balance"
-                                                                        type="number" required
-                                                                        :rules="[rules.counter, rules.number]"
-                                                                        v-model="newBalance"></v-text-field>
-                                                            </v-form>
-                                                        </v-flex>
-
-                                                    </v-layout>
-                                                </v-container>
-                                            </v-card-text>
-                                            <v-card-actions>
-                                                <v-spacer></v-spacer>
-                                                <v-btn color="primary" text @click="dialog = false">Close</v-btn>
-                                                <v-btn color="primary" text @click="changeBalance">Save</v-btn>
-                                            </v-card-actions>
-                                        </v-card>
-                                    </v-dialog>
-                                </v-list-tile-action>
                             </v-list-tile>
 
                             <v-list-tile
@@ -185,12 +151,26 @@
                     </v-card>
                 </v-flex>
                 <v-flex md4>
+                    <v-card class="mb-3">
+                        <v-card-title>
+                            <v-text-field
+                                    v-model="search"
+                                    append-icon="search"
+                                    label="Search"
+                                    single-line
+                                    hide-details
+                            ></v-text-field>
+                        </v-card-title>
+                    </v-card>
+                    <v-card class="my-3">
+                        <v-subheader>Packages</v-subheader>
                     <v-data-table
                             :headers="headers"
                             :items="packages"
                             items-per-page="5"
                             class="elevation-1"
                             :loading="loadingPackages"
+                            :search="search"
                     >
                         <template slot="items" slot-scope="props">
                             <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
@@ -214,12 +194,16 @@
                             </td>
                         </template>
                     </v-data-table>
+                    </v-card>
+                    <v-card class="my-3">
+                        <v-subheader>Available packages</v-subheader>
                     <v-data-table
                             :headers="headers"
                             :items="aviablePackages"
                             items-per-page="5"
-                            class="elevation-1 mt-3"
+                            class="elevation-1"
                             :loading="loadingAviablePackages"
+                            :search="search"
                     >
                         <template slot="items" slot-scope="props">
                             <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
@@ -243,6 +227,7 @@
                             </td>
                         </template>
                     </v-data-table>
+                    </v-card>
                 </v-flex>
             </v-layout>
         </v-container>
@@ -264,6 +249,7 @@
                 loadingAviablePackages: true,
                 snackbar: false,
                 dialog: false,
+                search:'',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 newBalance: '',

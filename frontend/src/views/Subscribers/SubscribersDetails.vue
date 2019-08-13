@@ -24,9 +24,23 @@
                     >
                         <v-list two-line subheader dense>
                             <v-subheader>Details
-                                <v-btn color="error" @click="deleteSubscriber" small icon ripple class="ml-auto mr-0">
-                                    <v-icon small>delete</v-icon>
-                                </v-btn>
+                                <v-dialog v-model="deleteDialog" persistent max-width="290">
+                                    <template v-slot:activator="{ on }">
+                                        <v-btn color="error" v-on="on" small icon ripple class="ml-auto mr-0">
+                                            <v-icon small>delete</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <v-card>
+                                        <v-card-title class="headline">Use Google's location service?</v-card-title>
+                                        <v-card-text>Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.</v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn small color="error" @click="deleteDialog = false">Close</v-btn>
+                                            <v-btn outline small color="error" @click="deleteSubscriber">Delete</v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+
                             </v-subheader>
                             <v-list-tile
                                     avatar
@@ -139,64 +153,88 @@
                     </v-card>
                 </v-flex>
                 <v-flex md4>
-                    <v-data-table
-                            :headers="headers"
-                            :items="cards"
-                            items-per-page="5"
-                            class="elevation-1"
-                            :loading="loadingCards"
-                    >
-                        <template slot="items" slot-scope="props">
-                            <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
-                            <td class="text-xs-left no-wrap">
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" :to="`/cards/${props.item.pk}/details/`" color="info" ripple icon small dark>
-                                            <v-icon small>info</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Detail</span>
-                                </v-tooltip>
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" ripple icon small dark>
-                                            <v-icon small>close</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Remove</span>
-                                </v-tooltip>
-                            </td>
-                        </template>
-                    </v-data-table>
-                    <v-data-table
-                            :headers="headers"
-                            :items="aviableCards"
-                            items-per-page="5"
-                            class="elevation-1 mt-3"
-                            :loading="loadingAviableCards"
-                    >
-                        <template slot="items" slot-scope="props">
-                            <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
-                            <td class="text-xs-left no-wrap">
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" :to="`/cards/${props.item.pk}/details/`" color="info" ripple icon small dark>
-                                            <v-icon small>info</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Detail</span>
-                                </v-tooltip>
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" @click="addCard(props.item.pk)" color="success" ripple icon small dark>
-                                            <v-icon small>add</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Add</span>
-                                </v-tooltip>
-                            </td>
-                        </template>
-                    </v-data-table>
+                   <v-card class="mb-3">
+                       <v-card-title>
+                           <v-text-field
+                                   v-model="search"
+                                   append-icon="search"
+                                   label="Search"
+                                   single-line
+                                   hide-details
+                           ></v-text-field>
+                       </v-card-title>
+                   </v-card>
+                    <v-card class="my-3">
+                        <v-subheader>Cards</v-subheader>
+                        <v-data-table
+                                :headers="headers"
+                                :items="cards"
+                                items-per-page="5"
+                                class="elevation-1"
+                                :loading="loadingCards"
+                                :search="search"
+                        >
+                            <template slot="items" slot-scope="props">
+                                <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
+                                <td class="text-xs-left no-wrap">
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" :to="`/cards/${props.item.pk}/details/`" color="info" ripple
+                                                   icon small dark>
+                                                <v-icon small>info</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Detail</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" ripple icon
+                                                   small dark>
+                                                <v-icon small>close</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Remove</span>
+                                    </v-tooltip>
+                                </td>
+                            </template>
+                        </v-data-table>
+                    </v-card>
+                    <v-card class="my-3">
+                        <v-subheader>Available cards</v-subheader>
+                        <v-data-table
+                                :headers="headers"
+                                :items="aviableCards"
+                                items-per-page="5"
+                                class="elevation-1"
+                                :loading="loadingAviableCards"
+                                :search="search"
+                        >
+                            <template slot="items" slot-scope="props">
+                                <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
+                                <td class="text-xs-left no-wrap">
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" :to="`/cards/${props.item.pk}/details/`" color="info" ripple
+                                                   icon small dark>
+                                                <v-icon small>info</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Detail</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" @click="addCard(props.item.pk)" color="success" ripple icon
+                                                   small dark>
+                                                <v-icon small>add</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Add</span>
+                                    </v-tooltip>
+                                </td>
+                            </template>
+                        </v-data-table>
+                    </v-card>
+
                 </v-flex>
             </v-layout>
         </v-container>
@@ -219,6 +257,8 @@
                 loadingAviableCards: true,
                 snackbar: false,
                 dialog: false,
+                deleteDialog: false,
+                search:'',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 newBalance: '',
@@ -244,8 +284,8 @@
                     {text: 'Action', value: 'action', sortable: false},
                     // {text: 'Calories', value: 'calories'},
                 ],
-                cards:[],
-                aviableCards:[],
+                cards: [],
+                aviableCards: [],
                 rules: {
                     counter: value => value <= 2147483647 || 'Max 2147483647',
                     number: value => {
@@ -322,21 +362,26 @@
                     });
                 }
             },
-            addCard(pk){
-                axios.put(`${this.$hostname}/api/subscribers/edit/cards/${this.$route.params.id}/`,{card: pk})
-                        .then((response) => {
+            addCard(pk) {
+                axios.put(`${this.$hostname}/api/subscribers/edit/cards/${this.$route.params.id}/`, {card: pk})
+                    .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data);
                             this.getData();
                         }
                     }).catch((error) => {
-                    this.text = "Connection error";
-                    console.log(error)
-                    this.snackbar = true;
+                    if (error.response.status === 400) {
+                        this.text = "Balance too low";
+                        this.snackbar = true;
+                    } else {
+                        this.text = "Connection error";
+                        console.log(error)
+                        this.snackbar = true;
+                    }
                 });
             },
-            removeCard(pk){
-                axios.put(`${this.$hostname}/api/subscribers/delete/cards/${this.$route.params.id}/`,{card: pk})
+            removeCard(pk) {
+                axios.put(`${this.$hostname}/api/subscribers/delete/cards/${this.$route.params.id}/`, {card: pk})
                     .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data);
@@ -348,7 +393,7 @@
                     this.snackbar = true;
                 });
             },
-            deleteSubscriber(){
+            deleteSubscriber() {
                 axios.delete(`${this.$hostname}/api/subscribers/delete/${this.$route.params.id}/`)
                     .then((response) => {
                         if (response.status === 200) {

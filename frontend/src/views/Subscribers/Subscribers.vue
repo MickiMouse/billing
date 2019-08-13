@@ -15,41 +15,55 @@
                 </v-btn>
             </v-snackbar>
             <v-layout row wrap justify-center class="d-inline-block w-100">
-                <v-data-table
-                        :headers="headers"
-                        :items="subscribers"
-                        :items-per-page="5"
-                        class="elevation-1"
-                        :loading="loading"
-                >
-                    <template slot="items" slot-scope="props">
-                        <td class="text-xs-left no-wrap">{{ props.item.last_name + " "+
-                            props.item.first_name.charAt(0).toUpperCase() + '.' }}
-                        </td>
-                        <td class="text-xs-left no-wrap">{{ props.item.email }}</td>
-                        <td class="text-xs-left no-wrap">{{ props.item.balance }}</td>
-                        <td class="text-xs-left no-wrap">{{ props.item.cards.length }}</td>
-                        <td class="text-xs-left">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on }">
-                                    <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/details/`" color="info"
-                                           small icon ripple dark>
-                                        <v-icon small>info</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Detail</span>
-                            </v-tooltip>
-                            <!--<v-tooltip bottom>-->
-                            <!--<template v-slot:activator="{ on }">-->
-                            <!--<v-btn v-on="on" color="primary" fab small dark>-->
-                            <!--<v-icon>edit</v-icon>-->
-                            <!--</v-btn>-->
-                            <!--</template>-->
-                            <!--<span>Edit</span>-->
-                            <!--</v-tooltip>-->
-                        </td>
-                    </template>
-                </v-data-table>
+               <v-card>
+                   <v-card-title>
+                       Subscribers
+                       <v-spacer></v-spacer>
+                       <v-text-field
+                               v-model="search"
+                               append-icon="search"
+                               label="Search"
+                               single-line
+                               hide-details
+                       ></v-text-field>
+                   </v-card-title>
+                   <v-data-table
+                           :headers="headers"
+                           :items="subscribers"
+                           :items-per-page="5"
+                           class="elevation-1"
+                           :loading="loading"
+                           :search="search"
+                   >
+                       <template slot="items" slot-scope="props">
+                           <td class="text-xs-left no-wrap">{{ props.item.last_name + " "+
+                               props.item.first_name.charAt(0).toUpperCase() + '.' }}
+                           </td>
+                           <td class="text-xs-left no-wrap">{{ props.item.email }}</td>
+                           <td class="text-xs-left no-wrap">{{ props.item.balance }}</td>
+                           <td class="text-xs-left no-wrap">{{ props.item.cards.length }}</td>
+                           <td class="text-xs-left">
+                               <v-tooltip bottom>
+                                   <template v-slot:activator="{ on }">
+                                       <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/details/`" color="info"
+                                              small icon ripple dark>
+                                           <v-icon small>info</v-icon>
+                                       </v-btn>
+                                   </template>
+                                   <span>Detail</span>
+                               </v-tooltip>
+                               <!--<v-tooltip bottom>-->
+                               <!--<template v-slot:activator="{ on }">-->
+                               <!--<v-btn v-on="on" color="primary" fab small dark>-->
+                               <!--<v-icon>edit</v-icon>-->
+                               <!--</v-btn>-->
+                               <!--</template>-->
+                               <!--<span>Edit</span>-->
+                               <!--</v-tooltip>-->
+                           </td>
+                       </template>
+                   </v-data-table>
+               </v-card>
             </v-layout>
             <v-dialog v-model="dialog" persistent max-width="600px">
                 <template v-slot:activator="{ on }">
@@ -124,7 +138,7 @@
                     <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="primary" text @click="dialog = false">Close</v-btn>
-                        <v-btn color="primary" text @click="submitSubsriberForm">Save</v-btn>
+                        <v-btn color="primary" text @click="submitSubscriberForm">Save</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -162,6 +176,7 @@
                 subscribers: [],
                 loading: true,
                 snackbar: false,
+                search: '',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 rules: {
@@ -195,7 +210,7 @@
 
                 return true
             },
-            submitSubsriberForm() {
+            submitSubscriberForm() {
                 if (!this.$refs.form.validate()) {
                     this.text = "Fill the form correctly";
                     this.snackbar = true

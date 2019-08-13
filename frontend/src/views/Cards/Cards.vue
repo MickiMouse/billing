@@ -15,34 +15,48 @@
         </v-snackbar>
         <v-container fluid id="main-container" grid-list-md>
             <v-layout row wrap justify-center class="d-inline-block w-100">
-                <v-data-table
-                        :headers="headers"
-                        :items="cards"
-                        :items-per-page="5"
-                        class="elevation-1"
-                        :loading="loading"
-                >
-                    <template slot="items" slot-scope="props">
-                        <td class="text-xs-left">{{ props.item.pk }}</td>
-                        <td class="text-xs-left">{{ props.item.label }}</td>
-                        <td class="text-xs-left">{{ props.item.created_at }}</td>
-                        <td class="text-xs-left">{{ props.item.last_change }}</td>
-                        <td class="text-xs-left">{{ props.item.expired_date }}</td>
-                        <td class="text-xs-left">{{ props.item.status }}</td>
-                        <!--<td class="text-xs-left">{{ props.item.price }}</td>-->
-                        <td class="text-xs-left">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on }">
-                                    <v-btn v-on="on" color="info" ripple icon small dark
-                                           :to="`/cards/${props.item.pk}/details/`" >
-                                        <v-icon small>info</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Detail</span>
-                            </v-tooltip>
-                        </td>
-                    </template>
-                </v-data-table>
+              <v-card>
+                  <v-card-title>
+                      Cards
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                              v-model="search"
+                              append-icon="search"
+                              label="Search"
+                              single-line
+                              hide-details
+                      ></v-text-field>
+                  </v-card-title>
+                  <v-data-table
+                          :headers="headers"
+                          :items="cards"
+                          :items-per-page="5"
+                          class="elevation-1"
+                          :loading="loading"
+                          :search="search"
+                  >
+                      <template slot="items" slot-scope="props">
+                          <td class="text-xs-left">{{ props.item.pk }}</td>
+                          <td class="text-xs-left">{{ props.item.label }}</td>
+                          <td class="text-xs-left">{{ props.item.created_at }}</td>
+                          <td class="text-xs-left">{{ props.item.last_change }}</td>
+                          <td class="text-xs-left">{{ props.item.expired_date }}</td>
+                          <td class="text-xs-left">{{ props.item.status }}</td>
+                          <!--<td class="text-xs-left">{{ props.item.price }}</td>-->
+                          <td class="text-xs-left">
+                              <v-tooltip bottom>
+                                  <template v-slot:activator="{ on }">
+                                      <v-btn v-on="on" color="info" ripple icon small dark
+                                             :to="`/cards/${props.item.pk}/details/`" >
+                                          <v-icon small>info</v-icon>
+                                      </v-btn>
+                                  </template>
+                                  <span>Detail</span>
+                              </v-tooltip>
+                          </td>
+                      </template>
+                  </v-data-table>
+              </v-card>
             </v-layout>
             <v-fab-transition>
                 <v-btn
@@ -52,7 +66,7 @@
                         bottom
                         right
                         fab
-                        v-on="on"
+                        @click="createCard"
                 >
                     <v-icon>add</v-icon>
                 </v-btn>
@@ -85,6 +99,7 @@
                 cards: [],
                 loading: true,
                 snackbar: false,
+                search:'',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
             }
@@ -104,6 +119,20 @@
                     this.snackbar = true;
                 });
             },
+            createCard(){
+                axios.post(`${this.$hostname}/api/cards/create/`)
+                    .then((response) => {
+                        console.log(response.data)
+                        if (response.status === 201) {
+                            this.getData();
+                            this.text = "Card created!";
+                            this.snackbar = true;
+                        }
+                    }).catch((error) => {
+                    this.text = "Connection error";
+                    this.snackbar = true;
+                });
+            }
         },
         beforeCreate() {
             if (!this.$session.exists()) {
