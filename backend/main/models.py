@@ -2,8 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.core.signals import Signal
-from backend.settings import SSSSS
 
+from backend.settings import SSSSS
 from .utilities import (
     send_activation_notification,
     send_request_reset_password,
@@ -56,20 +56,26 @@ def get_admin():
 
 class Bouquet(models.Model):
     number = models.IntegerField(verbose_name='Number', db_index=True, unique=True)
-    name = models.CharField(verbose_name='Bouquet', max_length=20)
-    age_limit = models.IntegerField(verbose_name='Age limit')
-    packages = models.ManyToManyField('Packet', related_name='bouquets')
+    name = models.CharField(verbose_name='Bouquet', max_length=20, blank=True, null=True)
+    age_limit = models.IntegerField(verbose_name='Age limit',
+                                    blank=True, null=True)
+    packages = models.ManyToManyField('Packet', blank=True, null=True,
+                                      related_name='bouquets',)
 
     def __str__(self):
         return '%d %s' % (self.number, self.name)
 
 
 class Packet(models.Model):
-    header = models.CharField(verbose_name='header', max_length=50, blank=True)
-    age_limit = models.IntegerField(verbose_name='Age limit', blank=True, null=True)
+    header = models.CharField(verbose_name='header', max_length=50)
     tariff = models.IntegerField(verbose_name='Tariff of one period', default=0)
-    cards = models.ForeignKey('Card', on_delete=models.PROTECT, blank=True, null=True,
-                              related_name='packages')
+    cards = models.ManyToManyField('Card', blank=True, null=True,
+                                   related_name='packages')
+
+    def age_limit(self):
+        age = self.bouquets.aggregate(
+            max=models.Max('age_limit'))['max']
+        return age
 
     def __str__(self):
         return self.header
@@ -77,15 +83,15 @@ class Packet(models.Model):
 
 class Card(models.Model):
     STATUS = [
-        ('Active', 'A'),
-        ('Inactive', 'I'),
-        ('Expired', 'E'),
+        ('A', 'Active'),
+        ('I', 'Inactive'),
+        ('E', 'Expired'),
     ]
     reseller = models.ForeignKey(User, on_delete=models.PROTECT, default=get_admin, related_name='cards')
     created_at = models.DateTimeField(verbose_name='Created_at', auto_now_add=True)
     last_change = models.DateTimeField(verbose_name='Last_change', auto_now=True, blank=True)
     expired_date = models.DateTimeField(verbose_name='Expired date', blank=True, null=True)
-    status = models.CharField(verbose_name='Status', max_length=10, choices=STATUS, default='A')
+    status = models.CharField(verbose_name='Status', max_length=10, choices=STATUS, default='I')
     subscriber = models.ForeignKey('Subscriber', on_delete=models.PROTECT, related_name='cards',
                                    null=True, blank=True)
 
@@ -97,14 +103,12 @@ class Card(models.Model):
         return '{}-{}-{}'.format(SSSSS, str(RRR), nnnnnn)
 
     def price(self):
-        priceReseller = self.reseller.price_card
         if self.packages.exists():
             pricePackages = self.packages.aggregate(
                 price=models.Sum('tariff'))['price']
         else:
             pricePackages = 0
-        result = priceReseller + pricePackages
-        return result
+        return pricePackages
 
     def __str__(self):
         return '%s %d' % (self.label(), self.pk)

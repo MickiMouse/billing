@@ -1,11 +1,6 @@
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '(971f##xbymbs88^-l)%u4qil1y8i^z#vj4kzl=n+e9pif&7+3'
@@ -13,10 +8,7 @@ SECRET_KEY = '(971f##xbymbs88^-l)%u4qil1y8i^z#vj4kzl=n+e9pif&7+3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['157.230.98.28']
-
-
-# Application definition
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,8 +18,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
-    'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework',
     'corsheaders',
     'djoser',
 ]
@@ -66,10 +58,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -80,10 +68,6 @@ DATABASES = {
         'PORT': 5432,
     }
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -139,6 +123,20 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
-    "DATETIME_INPUT_FORMATS": ["%m/%d/%Y %H:%M:%S"],
+    'DATETIME_FORMAT': "%d/%m/%Y %H:%M:%S",
+    "DATETIME_INPUT_FORMATS": ["%d/%m/%Y %H:%M:%S"],
 }
+
+KIND_PERIOD = 'MONTHS'
+
+KIND_PAYMENT = 'PREPAYMENT'
+
+MAX_BOUQUETS = 127
+
+SERVER_IP = '31.43.129.21'
+
+SERVER_PORT = 8100
+
+SERVER_LOGIN = 'admin'
+
+SERVER_PSWD = ''

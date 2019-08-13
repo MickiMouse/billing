@@ -90,6 +90,15 @@ class BouquetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class BouquetShortDescriptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Bouquet
+        fields = ('number',
+                  'name',
+                  'age_limit',)
+
+
 class PackageListSerializer(serializers.ModelSerializer):
     """Serializer for Packet"""
 
@@ -112,7 +121,7 @@ class CardShortDescriptionSerializer(serializers.ModelSerializer):
 class PackageDetailSerializer(serializers.ModelSerializer):
     """Serializer for detail of package"""
     bouquets = BouquetSerializer(many=True)
-    cards = CardShortDescriptionSerializer()
+    cards = CardShortDescriptionSerializer(many=True)
 
     class Meta:
         model = Packet
@@ -129,17 +138,14 @@ class PackageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = ('header',
-                  'age_limit',
-                  'tariff',
-                  'bouquets')
+                  'tariff',)
 
     def validate(self, attrs):
         header = attrs.get('header')
-        age_limit = attrs.get('age_limit')
         tariff = attrs.get('tariff')
         if tariff < 0:
             raise serializers.ValidationError('Tariff cannot be less zero')
-        if not header or not age_limit or not tariff:
+        if not header or not tariff:
             raise serializers.ValidationError('Filed is required')
         return attrs
 
@@ -157,14 +163,7 @@ class PackageEditSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Packet
-        fields = ('tariff',
-                  'bouquets')
-
-    def validate(self, attrs):
-        tariff = attrs.get('tariff')
-        if tariff < 0:
-            raise serializers.ValidationError('Tariff cannot be less zero')
-        return attrs
+        fields = ('tariff',)
 
 
 class SubscriberSerializer(serializers.ModelSerializer):

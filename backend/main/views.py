@@ -1,10 +1,13 @@
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from django.shortcuts import get_object_or_404
 from django.core.signing import BadSignature
 from django.contrib.auth import get_user_model
 from rest_framework import generics
 from rest_framework.status import (HTTP_200_OK,
                                    HTTP_201_CREATED,
-                                   HTTP_404_NOT_FOUND)
+                                   HTTP_404_NOT_FOUND,
+                                   HTTP_400_BAD_REQUEST)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import (
@@ -14,9 +17,11 @@ from rest_framework.permissions import (
 )
 from rest_framework.authtoken.models import Token
 
+from backend.settings import KIND_PERIOD
 from .permission import IsOwner
 from .models import (
     Packet,
+    Bouquet,
     Card,
     Subscriber,
     reset_password,
@@ -40,8 +45,10 @@ from .serializer import (
     SubscriberCreateSerializer,
     PasswordRequestSerializer,
     PasswordSerializer,
+    BouquetShortDescriptionSerializer,
 )
 from .utilities import signer
+from .api import Command
 
 User = get_user_model()
 
@@ -192,7 +199,8 @@ class CardUpdatePackageView(APIView):
         package_pk = request.data.get('package')
         package = Packet.objects.filter(pk=int(package_pk))
         if package.first() is None:
-            raise generics.ValidationError('Cannot add this package')
+            return Response({'detail': 'Cannot add this package'},
+                            status=HTTP_400_BAD_REQUEST)
         data.append(package.first())
         card.packages.set(data)
         card.save()
@@ -211,7 +219,8 @@ class CardRemovePackageView(APIView):
         package_pk = request.data.get('package')
         package = Packet.objects.filter(pk=int(package_pk))
         if package.first() is None:
-            raise generics.ValidationError('Cannot remove this package')
+            return Response({'detail': 'Cannot remove this package'},
+                            status=HTTP_400_BAD_REQUEST)
         data.remove(package.first())
         card.packages.set(data)
         card.save()
@@ -297,18 +306,24 @@ class SubscriberUpdateCardsView(APIView):
         card_pk = request.data.get('card')
         card = Card.objects.filter(pk=card_pk)
         if subscriberCards.intersection(card).exists():
-            return Response({'detail': 'This card already exists'})
+            return Response({'detail': 'This card already exists'},
+                            status=HTTP_400_BAD_REQUEST)
         user = request.user
         data = list(subscriberCards)
         querysetcard = user.cards.filter(pk=card_pk)
         if not querysetcard.exists():
             return Response({'detail': 'Unable to find such a card'},
                             status=HTTP_404_NOT_FOUND)
-        for i in range(len(querysetcard)):
-            data.append(querysetcard[i])
         if subscriber.balance - querysetcard.first().price() < 0:
-            return Response({'detail': 'Cannot add card, balance will be < 0'})
-        subscriber.balance -= querysetcard.first().price()
+            return Response({'detail': 'Cannot add card'},
+                            status=HTTP_400_BAD_REQUEST)
+        for i in range(len(querysetcard)):
+            if KIND_PERIOD == 'MONTHS':
+                card = querysetcard[i]
+                card.expired_date = datetime.now() + relativedelta(months=1)
+                card.save(update_fields=['expired_date'])
+                data.append(card)
+                subscriber.balance -= user.price_card
         subscriber.cards.set(data)
         subscriber.save()
         serializer = SubscriberEditCardsSerializer(subscriber)
@@ -343,7 +358,7 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
     def put(self, request, *args, **kwargs):
         pk = kwargs['pk']
         subscriber = Subscriber.objects.get(pk=pk)
-        new_balance = request.data['balance']
+        new_balance = int(request.data['balance'])
         user = request.user
         diff = user.balance - new_balance
         if diff > 0:
@@ -393,4 +408,57 @@ class ResetPasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         user.set_password(serializer.data['password2'])
         user.save()
+        return Response(serializer.data)
+
+
+class DownloadBouquets(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, *args, **kwargs):
+        count = kwargs['count']
+        command = Command()
+        command.handle(count=count)
+        return Response({'bouquets': 'saved'})
+
+
+class BouquetsFilterListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BouquetShortDescriptionSerializer
+    queryset = Bouquet.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs['pk']
+        package = Packet.objects.get(pk=pk)
+        bouquets = Bouquet.objects.all().difference(package.bouquets.all())
+        serializer = self.get_serializer(bouquets, many=True)
+        return Response(serializer.data)
+
+
+class PackageUpdateBouquetsView(generics.UpdateAPIView):
+    queryset = Packet.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = PackageDetailSerializer
+
+    def put(self, request, *args, **kwargs):
+        pk = kwargs['pk']
+        package = Packet.objects.get(pk=pk)
+        bouquet = Bouquet.objects.get(number=request.data['bouquet'])
+        package.bouquets.add(bouquet)
+        package.save()
+        serializer = self.get_serializer(instance=package)
+        return Response(serializer.data)
+
+
+class PackageRemoveBouquetsView(generics.UpdateAPIView):
+    queryset = Packet.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = PackageDetailSerializer
+
+    def put(self, request, *args, **kwargs):
+        pk = kwargs['pk']
+        package = Packet.objects.get(pk=pk)
+        bouquet = Bouquet.objects.get(number=request.data['bouquet'])
+        package.bouquets.remove(bouquet)
+        package.save()
+        serializer = self.get_serializer(instance=package)
         return Response(serializer.data)
