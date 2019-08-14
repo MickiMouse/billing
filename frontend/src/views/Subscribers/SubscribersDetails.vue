@@ -31,8 +31,8 @@
                                         </v-btn>
                                     </template>
                                     <v-card>
-                                        <v-card-title class="headline">Use Google's location service?</v-card-title>
-                                        <v-card-text>Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.</v-card-text>
+                                        <v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>
+                                        <v-card-text>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quam, similique.</v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
                                             <v-btn small color="error" @click="deleteDialog = false">Close</v-btn>
