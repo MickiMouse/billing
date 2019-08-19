@@ -14,10 +14,14 @@ export default new Vuex.Store({
     ],
     state: {
         MenuVisible: false,
+        isPREPAYMENT: false,
     },
     getters: {
         menuVisible(state){
             return state.MenuVisible;
+        },
+        isPREPAYMENT(state){
+            return state.isPREPAYMENT;
         }
     },
     mutations: {

@@ -15,20 +15,17 @@
         </v-snackbar>
         <top-panel-menu/>
         <v-toolbar color="primary" dark extended extension-height="4" app>
-
-
             <v-toolbar-side-icon
                     @click.stop="$store.dispatch('switchMenu')"/>
-
             <v-toolbar-title class="headline text-uppercase">
-                <!--<span>SMM</span>-->
                 <span class="font-weight-light">Ripple</span>
                 <span class="font-weight-thin">{{this.$route.meta.title}}</span>
             </v-toolbar-title>
-            <!--<v-flex xs4>-->
-                <!--<top-panel-search/>-->
-            <!--</v-flex>-->
             <v-spacer/>
+            <!--<v-toolbar-items>-->
+               <!---->
+            <!--</v-toolbar-items>-->
+            <top-panel-settings/>
             <v-btn text
                    flat
                    color="secondary"
@@ -49,10 +46,11 @@
     import axios from 'axios'
     import TopPanelMenu from "@/components/topPanel/topPanelMenu";
     import TopPanelSearch from "@/components/topPanel/topPanelSearch";
+    import TopPanelSettings from "./topPanelSettings";
 
     export default {
         name: "topPanel",
-        components: {TopPanelSearch, TopPanelMenu},
+        components: {TopPanelSettings, TopPanelSearch, TopPanelMenu},
         data() {
             return {
                 drawer: false,
@@ -109,7 +107,7 @@
         },
         computed: {
             show: function () {
-                return  this.$route.name !== 'login' &&  this.$route.name !== 'register';
+                return  this.$route.name !== 'login' &&  this.$route.name !== 'register' &&  this.$route.name !== 'forgot';
             }
         },
         mounted(){

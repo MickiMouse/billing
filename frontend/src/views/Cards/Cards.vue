@@ -58,7 +58,7 @@
                   </v-data-table>
               </v-card>
             </v-layout>
-            <v-fab-transition>
+            <v-fab-transition v-if="this.$session.get('isSuperuser')">
                 <v-btn
                         color="primary"
                         dark

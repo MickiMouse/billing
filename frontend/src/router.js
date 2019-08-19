@@ -24,6 +24,30 @@ const router = new Router({
             },
         },
         {
+            path: '/login/:token',
+            name: 'login token',
+            component: () => import('./views/Login/Login.vue'),
+            meta:{
+                title: 'Login',
+            },
+        },
+        {
+            path: '/forgot',
+            name: 'forgot',
+            component: () => import('./views/Login/LoginForgotPassword.vue'),
+            meta:{
+                title: 'Login',
+            },
+        },
+        {
+            path: '/password/:token',
+            name: 'forgot',
+            component: () => import('./views/Login/LoginForgotPassword.vue'),
+            meta:{
+                title: 'Login',
+            },
+        },
+        {
             path: '/dashboard',
             name: 'dashboard',
             component: () => import('./views/Home/Home.vue'),
@@ -41,7 +65,7 @@ const router = new Router({
         },
         {
             path: '/subscribers/:id/details',
-            name: 'subscribers',
+            name: 'subscribers details',
             component: () => import('./views/Subscribers/SubscribersDetails.vue'),
             meta: {
                 title: 'Subscribers',
@@ -57,7 +81,7 @@ const router = new Router({
         },
         {
             path: '/cards/:id/details',
-            name: 'cards',
+            name: 'cards details',
             component: () => import('./views/Cards/CardsDetails.vue'),
             meta: {
                 title: 'Cards',
@@ -73,7 +97,7 @@ const router = new Router({
         },
         {
             path: '/packages/:id/details',
-            name: 'packages',
+            name: 'packages details',
             component: () => import('./views/Packages/PackagesDetails.vue'),
             meta: {
                 title: 'Packages',
@@ -98,7 +122,6 @@ const router = new Router({
     ]
 });
 router.beforeEach((to, from, next) => {
-    console.log(to);
     document.title = to.meta.title + ' | Ripple';
     next()
 });

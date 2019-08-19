@@ -34,6 +34,7 @@
                            class="elevation-1"
                            :loading="loading"
                            :search="search"
+                           v-if="!$store.getters.isPREPAYMENT"
                    >
                        <template slot="items" slot-scope="props">
                            <td class="text-xs-left no-wrap">{{ props.item.last_name + " "+
@@ -62,6 +63,44 @@
                                <!--</v-tooltip>-->
                            </td>
                        </template>
+
+                   </v-data-table>
+                   <v-data-table
+                           :headers="headers"
+                           :items="subscribers"
+                           :items-per-page="5"
+                           class="elevation-1"
+                           :loading="loading"
+                           :search="search"
+                           v-else
+                   >
+                       <template slot="items" slot-scope="props">
+                           <td class="text-xs-left no-wrap">{{ props.item.last_name + " "+
+                               props.item.first_name.charAt(0).toUpperCase() + '.' }}
+                           </td>
+                           <td class="text-xs-left no-wrap">{{ props.item.email }}</td>
+                           <td class="text-xs-left no-wrap">{{ props.item.cards.length }}</td>
+                           <td class="text-xs-left">
+                               <v-tooltip bottom>
+                                   <template v-slot:activator="{ on }">
+                                       <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/details/`" color="info"
+                                              small icon ripple dark>
+                                           <v-icon small>info</v-icon>
+                                       </v-btn>
+                                   </template>
+                                   <span>Detail</span>
+                               </v-tooltip>
+                               <!--<v-tooltip bottom>-->
+                               <!--<template v-slot:activator="{ on }">-->
+                               <!--<v-btn v-on="on" color="primary" fab small dark>-->
+                               <!--<v-icon>edit</v-icon>-->
+                               <!--</v-btn>-->
+                               <!--</template>-->
+                               <!--<span>Edit</span>-->
+                               <!--</v-tooltip>-->
+                           </td>
+                       </template>
+
                    </v-data-table>
                </v-card>
             </v-layout>
@@ -249,6 +288,21 @@
         beforeCreate() {
             if (!this.$session.exists()) {
                 this.$router.push('/')
+            }
+        },
+        beforeMount(){
+            if(this.$store.getters.isPREPAYMENT){
+                this.headers= [
+                    {
+                        text: 'Full name',
+                        align: 'left',
+                        //  sortable: false,
+                        value: 'last_name',
+                    },
+                    {text: 'Email', value: 'email'},
+                    {text: 'Cards', value: 'cards'},
+                    {text: 'Action', value: 'action', sortable: false},
+                ]
             }
         },
         mounted() {

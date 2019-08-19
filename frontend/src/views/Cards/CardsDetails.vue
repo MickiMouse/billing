@@ -25,7 +25,7 @@
                         <v-list two-line subheader dense>
                             <v-subheader>Details
                                 <!--<v-btn color="error" @click="deleteSubscriber" small icon ripple class="ml-auto mr-0">-->
-                                    <!--<v-icon small>delete</v-icon>-->
+                                <!--<v-icon small>delete</v-icon>-->
                                 <!--</v-btn>-->
                             </v-subheader>
                             <v-list-tile
@@ -52,6 +52,13 @@
                                     <v-list-tile-title>Status</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.status}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
+                                <!--<v-list-tile-avatar>-->
+                                <!--<v-switch-->
+                                <!--v-model="details.status"-->
+                                <!--@change="updateStatus"-->
+                                <!--:disabled="details.status === 'Expired'"-->
+                                <!--&gt;</v-switch>-->
+                                <!--</v-list-tile-avatar>-->
                             </v-list-tile>
                             <v-list-tile
                                     avatar
@@ -76,6 +83,30 @@
                                     <v-list-tile-title>Expired date</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.expired_date}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
+                                <div class="d-flex align-center justify-center" v-if="$store.getters.isPREPAYMENT">
+                                    <v-form ref="form">
+                                        <v-text-field
+                                                label="Periods"
+                                                class="mr-2 ml-auto"
+                                                type="number"
+                                                :rules="[rules.counter, rules.number]"
+                                                v-model="numOfPeriods"
+                                        ></v-text-field>
+
+
+                                    </v-form>
+                                    <v-btn
+                                            color="pink"
+                                            dark
+                                            small
+                                            ripple
+                                            icon
+                                            class="ml-auto"
+                                            @click="updateCardPeriod"
+                                    >
+                                        <v-icon small>autorenew</v-icon>
+                                    </v-btn>
+                                </div>
                             </v-list-tile>
 
                             <v-list-tile
@@ -117,7 +148,8 @@
                                 <v-list-tile-avatar>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
-                                            <v-btn v-on="on" :to="`/subscribers/${details.subscriber.pk}/details/`" color="info" ripple icon small dark>
+                                            <v-btn v-on="on" :to="`/subscribers/${details.subscriber.pk}/details/`"
+                                                   color="info" ripple icon small dark>
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
@@ -139,7 +171,8 @@
                                 <v-list-tile-avatar>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
-                                            <v-btn v-on="on" :to="`/resellers/${details.reseller.pk}/details/`" color="info" ripple icon small dark>
+                                            <v-btn v-on="on" :to="`/resellers/${details.reseller.pk}/details/`"
+                                                   color="info" ripple icon small dark>
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
@@ -164,69 +197,73 @@
                     </v-card>
                     <v-card class="my-3">
                         <v-subheader>Packages</v-subheader>
-                    <v-data-table
-                            :headers="headers"
-                            :items="packages"
-                            items-per-page="5"
-                            class="elevation-1"
-                            :loading="loadingPackages"
-                            :search="search"
-                    >
-                        <template slot="items" slot-scope="props">
-                            <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
-                            <td class="text-xs-left no-wrap">
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info" ripple icon small dark>
-                                            <v-icon small>info</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Detail</span>
-                                </v-tooltip>
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" ripple icon small dark>
-                                            <v-icon small>close</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Remove</span>
-                                </v-tooltip>
-                            </td>
-                        </template>
-                    </v-data-table>
+                        <v-data-table
+                                :headers="headers"
+                                :items="packages"
+                                items-per-page="5"
+                                class="elevation-1"
+                                :loading="loadingPackages"
+                                :search="search"
+                        >
+                            <template slot="items" slot-scope="props">
+                                <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
+                                <td class="text-xs-left no-wrap">
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info"
+                                                   ripple icon small dark>
+                                                <v-icon small>info</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Detail</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" ripple
+                                                   icon small dark>
+                                                <v-icon small>close</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Remove</span>
+                                    </v-tooltip>
+                                </td>
+                            </template>
+                        </v-data-table>
                     </v-card>
                     <v-card class="my-3">
                         <v-subheader>Available packages</v-subheader>
-                    <v-data-table
-                            :headers="headers"
-                            :items="aviablePackages"
-                            items-per-page="5"
-                            class="elevation-1"
-                            :loading="loadingAviablePackages"
-                            :search="search"
-                    >
-                        <template slot="items" slot-scope="props">
-                            <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
-                            <td class="text-xs-left no-wrap">
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info" ripple icon small dark>
-                                            <v-icon small>info</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Detail</span>
-                                </v-tooltip>
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn v-on="on" @click="addPackage(props.item.pk)" color="success" ripple icon small dark>
-                                            <v-icon small>add</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Add</span>
-                                </v-tooltip>
-                            </td>
-                        </template>
-                    </v-data-table>
+                        <v-data-table
+                                :headers="headers"
+                                :items="aviablePackages"
+                                items-per-page="5"
+                                class="elevation-1"
+                                :loading="loadingAviablePackages"
+                                :search="search"
+                        >
+                            <template slot="items" slot-scope="props">
+                                <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
+                                <td class="text-xs-left no-wrap">
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" :to="`/packages/${props.item.pk}/details/`" color="info"
+                                                   ripple icon small dark>
+                                                <v-icon small>info</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Detail</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" @click="addPackage(props.item.pk)" color="success" ripple
+                                                   icon small dark>
+                                                <v-icon small>add</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Add</span>
+                                    </v-tooltip>
+                                </td>
+                            </template>
+                        </v-data-table>
                     </v-card>
                 </v-flex>
             </v-layout>
@@ -249,10 +286,11 @@
                 loadingAviablePackages: true,
                 snackbar: false,
                 dialog: false,
-                search:'',
+                search: '',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 newBalance: '',
+                numOfPeriods: 1,
                 details: {
                     address: "",
                     balance: 0,
@@ -275,10 +313,10 @@
                     {text: 'Action', value: 'action', sortable: false},
                     // {text: 'Calories', value: 'calories'},
                 ],
-                packages:[],
-                aviablePackages:[],
+                packages: [],
+                aviablePackages: [],
                 rules: {
-                    counter: value => value <= 2147483647 || 'Max 2147483647',
+                    counter: value => (value <= 2147483647 && value >= 1) || 'Min 1 and Max 2147483647',
                     number: value => {
                         const pattern = /^\d+$/;
                         return pattern.test(value) || 'Invalid number.'
@@ -286,20 +324,12 @@
                 },
             }
         },
-        computed:{
-
+        computed: {
+            status() {
+                return this.details.status ? "Active" : "Inactive";
+            },
         },
         methods: {
-            save() {
-                this.snack = true
-                this.snackColor = 'success'
-                this.snackText = 'Data saved'
-            },
-            cancel() {
-                this.snack = true
-                this.snackColor = 'error'
-                this.snackText = 'Canceled'
-            },
             getData() {
                 this.loadingPackages = true;
                 axios.get(`${this.$hostname}/api/cards/${this.$route.params.id}/`)
@@ -331,23 +361,32 @@
                     this.snackbar = true;
                 });
             },
-            changeBalance() {
+            updateStatus() {
+                axios.put(`${this.$hostname}/api/cards/edit/status/${this.$route.params.id}/`, {status: this.status})
+                    .then((response) => {
+                        if (response.status === 200) {
+                            this.getData();
+                            this.text = "Status changed!";
+                            this.snackbar = true;
+                        }
+                    }).catch((error) => {
+                    this.details.status = !this.details.status;
+                    this.text = "Connection error";
+                    console.log(error)
+                    this.snackbar = true;
+                })
+            },
+            updateCardPeriod() {
                 if (!this.$refs.form.validate()) {
                     this.text = "Fill the form correctly";
                     this.snackbar = true;
                 } else {
                     this.loading = true;
-                    const putBody = {
-                        balance: this.newBalance
-                    };
-                    axios.put(`${this.$hostname}/api/subscribers/edit/balance/${this.$route.params.id}/`, putBody)
+                    axios.put(`${this.$hostname}/api/cards/edit/expired/${this.$route.params.id}/`, {period: Number.parseInt(this.numOfPeriods)})
                         .then((response) => {
                             if (response.status === 200) {
-                                this.details.balance = response.data.balance;
-                                this.newBalance = this.details.balance;
-                                this.loading = false;
-                                this.dialog = false;
-                                this.text = "Balance changed!";
+                                this.getData();
+                                this.text = "Period changed!";
                                 this.snackbar = true;
                             }
                         }).catch((error) => {
@@ -357,8 +396,8 @@
                     });
                 }
             },
-            addPackage(pk){
-                axios.put(`${this.$hostname}/api/cards/edit/package/${this.$route.params.id}/`,{package: pk})
+            addPackage(pk) {
+                axios.put(`${this.$hostname}/api/cards/edit/package/${this.$route.params.id}/`, {package: pk})
                     .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data);
@@ -370,8 +409,8 @@
                     this.snackbar = true;
                 });
             },
-            removeCard(pk){
-                axios.put(`${this.$hostname}/api/cards/delete/package/${this.$route.params.id}/`,{package: pk})
+            removeCard(pk) {
+                axios.put(`${this.$hostname}/api/cards/delete/package/${this.$route.params.id}/`, {package: pk})
                     .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data);
@@ -383,7 +422,7 @@
                     this.snackbar = true;
                 });
             },
-            deleteSubscriber(){
+            deleteSubscriber() {
                 axios.delete(`${this.$hostname}/api/subscribers/delete/${this.$route.params.id}/`)
                     .then((response) => {
                         if (response.status === 200) {
@@ -395,7 +434,7 @@
                     console.log(error)
                     this.snackbar = true;
                 });
-            }
+            },
         },
         beforeCreate() {
             if (!this.$session.exists()) {

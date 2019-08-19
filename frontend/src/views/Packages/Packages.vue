@@ -59,7 +59,7 @@
             </v-layout>
             <v-dialog v-model="dialog" persistent max-width="600px">
                 <template v-slot:activator="{ on }">
-                    <v-fab-transition>
+                    <v-fab-transition v-if="$session.get('isSuperuser')">
                         <v-btn
                                 color="primary"
                                 dark

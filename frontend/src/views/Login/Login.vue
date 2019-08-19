@@ -68,11 +68,11 @@
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn color="primary" @click.prevent="submitLoginForm">Login</v-btn>
+                            <v-btn color="primary" @click.prevent="submitLoginForm" :loading="verifyRegisterLoading">Login</v-btn>
                         </v-card-actions>
                         <v-card-text class="d-flex justify-content-between mt-2">
                             <router-link class="text-xs-left" to="/register">Register now!</router-link>
-                            <a href="" class="text-xs-right">Forgot Password?</a>
+                            <router-link class="text-xs-right" to="/forgot">Forgot Password?</router-link>
                         </v-card-text>
                     </v-card>
                 </v-flex>
@@ -95,6 +95,7 @@
                 username: '',
                 email: '',
                 password: '',
+                verifyRegisterLoading:false,
                 rules: {
                     required: value => !!value || 'Required.',
                     username: value => (value.length >= 4 && value.length <= 150) || 'Username between the 4 - 150 characters',
@@ -118,18 +119,17 @@
                         password: this.password,
                         username: this.username
                     };
-                    // this.$session.start()
-                    // this.$session.set('jwt', '5160d824064220354ab3930f2674db3141336830')
-                    // axios.defaults.headers.common['Authorization'] = 'Token ' + this.$session.get('jwt');
-                    // this.$router.push('/dashboard')
-
-                    axios.post(`${this.$hostname}/auth/token/login/`, data)
+                    axios.post(`${this.$hostname}/api/token/login/`, data)
                         .then((response) => {
                             console.log(response.data)
                             if (response.status === 200 && response.data.auth_token) {
                                 this.$session.start()
                                 this.$session.set('jwt', response.data.auth_token)
                                 axios.defaults.headers.common['Authorization'] = 'Token ' + this.$session.get('jwt');
+                                // this.$store.commit('set',{type: 'isSuperuser', items: response.data.is_superuser});
+                                // console.log(this.$store.getters.isSuperuser)
+                                this.$session.set('isSuperuser', response.data.is_superuser)
+                                // this.$store.dispatch('set',response.data.is_superuser)
                                 this.$router.push('/dashboard')
                             }
                         }).catch((error) => {
@@ -146,6 +146,23 @@
             this.$session.destroy();
             this.$router.push('/');
             axios.defaults.headers.common['Authorization'] = '';
+            if(this.$route.params.token){
+                this.verifyRegisterLoading = true;
+                axios.get(`${this.$hostname}/api/register_activate/${this.$route.params.token}/`)
+                    .then((response) => {
+                        if (response.status === 200) {
+                            this.verifyRegisterLoading = false;
+                            this.name = response.username;
+                            this.text = "Registration successful";
+                            this.snackbar = true;
+                        }
+                    }).catch((error) => {
+                    this.verifyRegisterLoading = false;
+                    this.text = "Connection error";
+                    console.log(error)
+                    this.snackbar = true;
+                });
+            }
         }
     }
 </script>

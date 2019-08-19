@@ -56,6 +56,7 @@
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile
+                                    v-if="!$store.getters.isPREPAYMENT"
                                     avatar
                                     @click=""
                             >
@@ -356,9 +357,15 @@
                                 this.snackbar = true;
                             }
                         }).catch((error) => {
-                        this.text = "Connection error";
-                        console.log(error)
-                        this.snackbar = true;
+                        if (error.response.status === 400) {
+                            this.text = "Balance too low";
+                            this.snackbar = true;
+                            this.dialog = false;
+                        } else {
+                            this.text = "Connection error";
+                            console.log(error)
+                            this.snackbar = true;
+                        }
                     });
                 }
             },

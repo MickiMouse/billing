@@ -391,9 +391,14 @@
                                 this.snackbar = true;
                             }
                         }).catch((error) => {
-                        this.text = "Connection error";
-                        console.log(error)
-                        this.snackbar = true;
+                        if (error.response.status === 400) {
+                            this.text = "Balance too low";
+                            this.snackbar = true;
+                        } else {
+                            this.text = "Connection error";
+                            console.log(error)
+                            this.snackbar = true;
+                        }
                     });
                 }
             },

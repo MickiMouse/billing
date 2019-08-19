@@ -60,6 +60,15 @@
                     this.$store.commit('set',{type: 'MenuVisible', items: val});
                 }
             }
+        },
+        beforeMount(){
+            if(!this.$session.get('isSuperuser')){
+                this.items = [
+                    {title: 'Subscribers', icon: 'person', route: '/subscribers'},
+                    {title: 'Cards', icon: 'card_membership', route: '/cards'},
+                    {title: 'Packages', icon: 'archive', route: '/packages'},
+                ]
+            }
         }
     }
 </script>
