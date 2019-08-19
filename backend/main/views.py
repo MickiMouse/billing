@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 from rest_framework import generics
 from rest_framework.status import (HTTP_200_OK,
                                    HTTP_201_CREATED,
-                                   HTTP_404_NOT_FOUND,
                                    HTTP_400_BAD_REQUEST)
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,17 +16,16 @@ from rest_framework.permissions import (
 )
 from rest_framework.authtoken.models import Token
 
-from backend.settings import KIND_PERIOD
 from .permission import IsOwner
 from .models import (
     Packet,
     Bouquet,
     Card,
     Subscriber,
+    Settings,
     reset_password,
 )
 from .serializer import (
-    TokenSerializer,
     ResellerCreateSerializer,
     ResellerSerializer,
     PackageListSerializer,
@@ -38,6 +36,8 @@ from .serializer import (
     CardSerializer,
     CardCreateSerializer,
     CardDetailSerializer,
+    CardUpdateStatusSerializer,
+    CardUpdateExpiredSerializer,
     SubscriberSerializer,
     SubscriberDetailSerializer,
     SubscriberEditCardsSerializer,
@@ -46,6 +46,7 @@ from .serializer import (
     PasswordRequestSerializer,
     PasswordSerializer,
     BouquetShortDescriptionSerializer,
+    SettingsSerializer,
 )
 from .utilities import signer
 from .api import Command
@@ -53,15 +54,33 @@ from .api import Command
 User = get_user_model()
 
 
+class TokenCreateView(APIView):
+    """Login"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = User.objects.get(username=username)
+        token = Token.objects.filter(user=user)
+        if token.exists():
+            return Response({'auth_token': token.first().key, 'is_superuser': user.is_superuser})
+        else:
+            if user.check_password(password):
+                token = Token.objects.create(user=user)
+                return Response({'auth_token': token.key, 'is_superuser': user.is_superuser})
+            else:
+                return Response({'errors': 'Invalid data'})
+
+
 class TokenDestroyView(APIView):
     """Logout"""
     permission_classes = [IsAuthenticated]
-    serializer_class = TokenSerializer
 
     def post(self, request):
         user = request.user
-        t = Token.objects.get(user=user)
-        t.delete()
+        token = Token.objects.get(user=user)
+        token.delete()
         return Response({"message": "Logout"}, status=HTTP_200_OK)
 
 
@@ -83,7 +102,7 @@ class ResellerActivateAPIView(generics.GenericAPIView):
             return Response({'errors': 'Badsignature'})
         user = get_object_or_404(User, email=email)
         if user.is_activated:
-            return Response({'message': 'User is activated'})
+            return Response({'errors': 'User is activated'})
         else:
             user.is_active = True
             user.is_activated = True
@@ -100,7 +119,7 @@ class ResellerListView(generics.ListAPIView):
 
 class ResellerDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
-    permission_classes = [IsAdminUser, IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     serializer_class = ResellerSerializer
 
 
@@ -176,24 +195,49 @@ class CardDetailView(generics.RetrieveAPIView):
     queryset = Card.objects.all()
 
 
-class CardDeleteView(generics.DestroyAPIView):
-    permission_classes = [IsAdminUser]
-    serializer_class = CardSerializer
+class CardUpdateExpiredView(generics.UpdateAPIView):
+    permission_classes = [IsOwner, IsAuthenticated]
+    serializer_class = CardUpdateExpiredSerializer
     queryset = Card.objects.all()
 
+    def put(self, request, *args, **kwargs):
+        pk = kwargs['pk']
+        period = int(request.data.get('period'))
+        if period == 0:
+            return Response({'detail': 'Period cannot equal to 0'},
+                            status=HTTP_400_BAD_REQUEST)
+        settings = Settings.objects.first()
+        card = Card.objects.get(pk=pk)
+        quantity = settings.quantity
+        total_period = period * quantity
+        if settings.kind_payment == 'PREPAYMENT':
+            if settings.kind_period == 'MONTHS':
+                card.expired_date = datetime.now() + relativedelta(months=total_period)
+            elif settings.kind_period == 'WEEKS':
+                card.expired_date = datetime.now() + relativedelta(weeks=total_period)
+            elif settings.kind_period == 'DAYS':
+                card.expired_date = datetime.now() + relativedelta(days=total_period)
+        else:
+            return Response({'detail': 'Cannot renew subscription'},
+                            status=HTTP_400_BAD_REQUEST)
+        card.save(update_fields=['expired_date'])
+        serializer = self.get_serializer(instance=card)
+        return Response(serializer.data)
 
-class CardUpdateView(generics.UpdateAPIView):
-    permission_classes = [IsAdminUser]
-    serializer_class = CardSerializer
+
+class CardUpdateStatusView(generics.UpdateAPIView):
+    permission_classes = [IsOwner, IsAuthenticated]
+    serializer_class = CardUpdateStatusSerializer
     queryset = Card.objects.all()
 
 
 class CardUpdatePackageView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner, IsAuthenticated]
 
     def put(self, request, **kwargs):
         pk = kwargs['pk']
         card = Card.objects.get(pk=pk)
+        # if card.expired_date is None:
         cardPackages = card.packages.all()
         data = list(cardPackages)
         package_pk = request.data.get('package')
@@ -206,10 +250,12 @@ class CardUpdatePackageView(APIView):
         card.save()
         serializer = CardSerializer(card)
         return Response(serializer.data)
+        # return Response({'detail': 'You can add packages when card will be expired'},
+        #                 status=HTTP_400_BAD_REQUEST)
 
 
 class CardRemovePackageView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner, IsAuthenticated]
 
     def put(self, request, **kwargs):
         pk = kwargs['pk']
@@ -236,10 +282,10 @@ class SubscriberListView(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        # if user.is_superuser:
-        #     subscribers = self.get_queryset()
-        #     serializer = SubscriberSerializer(subscribers, many=True)
-        #     return Response(serializer.data)
+        if user.is_superuser:
+            subscribers = self.get_queryset()
+            serializer = SubscriberSerializer(subscribers, many=True)
+            return Response(serializer.data)
         subscribers = Subscriber.objects.filter(reseller=user)
         serializer = SubscriberSerializer(subscribers, many=True)
         return Response(serializer.data)
@@ -248,13 +294,8 @@ class SubscriberListView(generics.ListAPIView):
 class SubscriberDetailView(generics.RetrieveAPIView):
     """Detail of subscriber"""
     queryset = Subscriber.objects.all()
-    permission_classes = [IsOwner, IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = SubscriberDetailSerializer
-
-    # def get(self, request, pk):
-    #     subscriber = Subscriber.objects.get(pk=pk)
-    #     serializer = SubscriberDetailSerializer(subscriber)
-    #     return Response(serializer.data)
 
 
 class SubscriberCreateView(generics.CreateAPIView):
@@ -301,29 +342,29 @@ class SubscriberUpdateCardsView(APIView):
 
     def put(self, request, **kwargs):
         pk = kwargs['pk']
+        settings = Settings.objects.first()
         subscriber = Subscriber.objects.get(pk=pk)
         subscriberCards = subscriber.cards.all()
+        data = list(subscriberCards)
         card_pk = request.data.get('card')
-        card = Card.objects.filter(pk=card_pk)
-        if subscriberCards.intersection(card).exists():
+        card = Card.objects.get(pk=card_pk)
+        if card in subscriberCards:
             return Response({'detail': 'This card already exists'},
                             status=HTTP_400_BAD_REQUEST)
-        user = request.user
-        data = list(subscriberCards)
-        querysetcard = user.cards.filter(pk=card_pk)
-        if not querysetcard.exists():
-            return Response({'detail': 'Unable to find such a card'},
-                            status=HTTP_404_NOT_FOUND)
-        if subscriber.balance - querysetcard.first().price() < 0:
-            return Response({'detail': 'Cannot add card'},
-                            status=HTTP_400_BAD_REQUEST)
-        for i in range(len(querysetcard)):
-            if KIND_PERIOD == 'MONTHS':
-                card = querysetcard[i]
-                card.expired_date = datetime.now() + relativedelta(months=1)
-                card.save(update_fields=['expired_date'])
-                data.append(card)
-                subscriber.balance -= user.price_card
+        if settings.kind_payment == 'VIRTUAL':
+            if subscriber.balance - card.price() < 0:
+                return Response({'detail': 'Cannot add card.'},
+                                status=HTTP_400_BAD_REQUEST)
+            period = int(settings.quantity)
+            if settings.kind_period == 'MONTHS':
+                card.expired_date = datetime.now() + relativedelta(months=period)
+            elif settings.kind_period == 'WEEKS':
+                card.expired_date = datetime.now() + relativedelta(weeks=period)
+            elif settings.kind_period == 'DAYS':
+                card.expired_date = datetime.now() + relativedelta(minutes=period)
+            card.save(update_fields=['expired_date'])
+            subscriber.balance -= card.price()
+        data.append(card)
         subscriber.cards.set(data)
         subscriber.save()
         serializer = SubscriberEditCardsSerializer(subscriber)
@@ -366,7 +407,8 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
             user.balance -= new_balance
         else:
             if user.credit > diff:
-                return Response({'detail': 'Your balance cannot be less your credit'})
+                return Response({'detail': 'Your balance cannot be less your credit'},
+                                status=HTTP_400_BAD_REQUEST)
             else:
                 subscriber.balance += new_balance
                 user.balance -= new_balance
@@ -379,6 +421,7 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
 class ResetPasswordRequestView(APIView):
     """Form for email for request"""
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = PasswordRequestSerializer(data=request.data)
@@ -394,9 +437,6 @@ class ResetPasswordView(APIView):
     """Update password"""
     permission_classes = [AllowAny]
     authentication_classes = []
-
-    def get(self, request, **kwargs):
-        return Response(kwargs)
 
     def put(self, request, **kwargs):
         try:
@@ -418,7 +458,7 @@ class DownloadBouquets(APIView):
         count = kwargs['count']
         command = Command()
         command.handle(count=count)
-        return Response({'bouquets': 'saved'})
+        return Response({'bouquets': f'saved {count} bouquets'})
 
 
 class BouquetsFilterListView(generics.ListAPIView):
@@ -461,4 +501,31 @@ class PackageRemoveBouquetsView(generics.UpdateAPIView):
         package.bouquets.remove(bouquet)
         package.save()
         serializer = self.get_serializer(instance=package)
+        return Response(serializer.data)
+
+
+class SettingsView(generics.RetrieveAPIView):
+    queryset = Settings.objects.all()
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    serializer_class = SettingsSerializer
+
+    def get(self, request, *args, **kwargs):
+        settings = Settings.objects.first()
+        serializer = self.get_serializer(instance=settings)
+        return Response(serializer.data)
+
+
+class ChangeSettingsView(generics.UpdateAPIView):
+    queryset = Settings.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = SettingsSerializer
+
+    def put(self, request, *args, **kwargs):
+        settings = Settings.objects.first()
+        print(request.data)
+        settings.kind_payment = request.data.get('kind_payment')
+        settings.quantity = request.data.get('quantity')
+        settings.kind_period = request.data.get('kind_period')
+        settings.save()
+        serializer = self.get_serializer(instance=settings)
         return Response(serializer.data)

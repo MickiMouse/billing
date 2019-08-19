@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     DownloadBouquets,
+    TokenCreateView,
     TokenDestroyView,
     ResellerListView,
     ResellerDetailView,
@@ -20,10 +21,10 @@ from .views import (
     CardListView,
     CardDetailView,
     CardCreateView,
-    # CardEditView,
-    CardDeleteView,
+    CardUpdateStatusView,
     CardUpdatePackageView,
     CardRemovePackageView,
+    CardUpdateExpiredView,
     SubscriberListView,
     SubscriberDetailView,
     SubscriberCreateView,
@@ -32,6 +33,8 @@ from .views import (
     SubscriberUpdateBalanceView,
     SubscriberDeleteCardView,
     BouquetsFilterListView,
+    SettingsView,
+    ChangeSettingsView,
 )
 
 app_name = 'main'
@@ -43,6 +46,7 @@ urlpatterns = [
     path('register_activate/<str:sign>/',
          ResellerActivateAPIView.as_view(),
          name='register_activate'),
+    path('token/login/', TokenCreateView.as_view()),
     path('token/logout/', TokenDestroyView.as_view()),
     path('packages-filter/<int:pk>/', PackageFilterListView.as_view()),
     path('packages/delete/<int:pk>/', PackageDeleteView.as_view()),
@@ -52,10 +56,10 @@ urlpatterns = [
     path('packages/<int:pk>/', PackageDetailView.as_view()),
     path('packages/create/', PackageCreateView.as_view()),
     path('packages/', PackageListView.as_view()),
+    path('cards/edit/status/<int:pk>/', CardUpdateStatusView.as_view()),
     path('cards/edit/package/<int:pk>/', CardUpdatePackageView.as_view()),
+    path('cards/edit/expired/<int:pk>/', CardUpdateExpiredView.as_view()),
     path('cards/delete/package/<int:pk>/', CardRemovePackageView.as_view()),
-    path('cards/delete/<int:pk>/', CardDeleteView.as_view()),
-    # path('cards/edit/<int:pk>/', CardEditView.as_view()),
     path('cards/<int:pk>/', CardDetailView.as_view()),
     path('cards/create/', CardCreateView.as_view()),
     path('cards/', CardListView.as_view()),
@@ -72,4 +76,6 @@ urlpatterns = [
          name='update_password'),
     path('download/<int:count>/', DownloadBouquets.as_view()),
     path('bouquets/<int:pk>/', BouquetsFilterListView.as_view()),
+    path('settings/', SettingsView.as_view()),
+    path('change-settings/', ChangeSettingsView.as_view()),
 ]

@@ -1,3 +1,5 @@
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -27,6 +29,32 @@ def reset_password_dispatcher(**kwargs):
 
 reset_password.connect(reset_password_dispatcher)
 
+pay_subscription = Signal(providing_args=['card', 'settings'])
+
+
+def pay_subscription_dispatcher(**kwargs):
+    card = kwargs['card']
+    settings = kwargs['settings']
+    subscriber = card.subscriber
+    if subscriber is None:
+        return 'Inactive'
+    diff = subscriber.balance - card.price()
+    if diff < 0:
+        return 'Expired'
+    subscriber.balance -= card.price()
+    period = settings.quantity
+    if settings.kind_period == 'MONTHS':
+        card.expired_date = datetime.now() + relativedelta(months=period)
+    elif settings.kind_period == 'WEEKS':
+        card.expired_date = datetime.now() + relativedelta(weeks=period)
+    else:
+        card.expired_date = datetime.now() + relativedelta(minutes=period)
+    subscriber.save(update_fields=['balance'])
+    card.save(update_fields=['expired_date'])
+
+
+pay_subscription.connect(pay_subscription_dispatcher)
+
 
 class Reseller(AbstractUser):
     address = models.CharField(verbose_name='address', max_length=100, blank=True)
@@ -51,7 +79,7 @@ User = get_user_model()
 
 
 def get_admin():
-    return User.objects.get(username='admin')
+    return User.objects.get(username='admin').pk
 
 
 class Bouquet(models.Model):
@@ -82,16 +110,10 @@ class Packet(models.Model):
 
 
 class Card(models.Model):
-    STATUS = [
-        ('Active', 'Active'),
-        ('Inactive', 'Inactive'),
-        ('Expired', 'Expired'),
-    ]
-    reseller = models.ForeignKey(User, on_delete=models.PROTECT, default=get_admin, related_name='cards')
+    reseller = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=get_admin, related_name='cards')
     created_at = models.DateTimeField(verbose_name='Created_at', auto_now_add=True)
     last_change = models.DateTimeField(verbose_name='Last_change', auto_now=True, blank=True)
     expired_date = models.DateTimeField(verbose_name='Expired date', blank=True, null=True)
-    status = models.CharField(verbose_name='Status', max_length=10, choices=STATUS, default='I')
     subscriber = models.ForeignKey('Subscriber', on_delete=models.PROTECT, related_name='cards',
                                    null=True, blank=True)
 
@@ -110,6 +132,19 @@ class Card(models.Model):
             pricePackages = 0
         return pricePackages
 
+    def status(self):
+        if self.expired_date is None:
+            return 'Inactive'
+        else:
+            if self.expired_date > datetime.now():
+                return 'Active'
+            else:
+                settings = Settings.objects.first()
+                if settings.kind_payment == 'VIRTUAL':
+                    pay_subscription.send(sender=Card, card=self,
+                                          settings=settings)
+                return 'Expired'
+
     def __str__(self):
         return '%s %d' % (self.label(), self.pk)
 
@@ -121,7 +156,13 @@ class Subscriber(models.Model):
     telephone = models.CharField(verbose_name='telephone', max_length=30, blank=True)
     email = models.EmailField(verbose_name='email', blank=True)
     balance = models.IntegerField(verbose_name='balance', default=0)
-    reseller = models.ForeignKey(User, on_delete=models.PROTECT, default=get_admin)
+    reseller = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=get_admin)
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
+
+
+class Settings(models.Model):
+    kind_payment = models.CharField(verbose_name='payment', max_length=10, default='PREPAYMENT')
+    kind_period = models.CharField(verbose_name='period', max_length=10, default='MONTHS')
+    quantity = models.IntegerField(verbose_name='quantity', default=1)
