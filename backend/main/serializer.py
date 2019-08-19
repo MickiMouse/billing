@@ -7,6 +7,7 @@ from .models import (
     Card,
     Packet,
     Bouquet,
+    Settings,
     user_registrated,
 )
 
@@ -143,8 +144,6 @@ class PackageCreateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         header = attrs.get('header')
         tariff = attrs.get('tariff')
-        if tariff < 0:
-            raise serializers.ValidationError('Tariff cannot be less zero')
         if not header or not tariff:
             raise serializers.ValidationError('Filed is required')
         return attrs
@@ -193,6 +192,20 @@ class CardSerializer(serializers.ModelSerializer):
                   'expired_date',
                   'status',
                   'label')
+
+
+class CardUpdateStatusSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Card
+        fields = ('status',)
+
+
+class CardUpdateExpiredSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Card
+        fields = ('expired_date',)
 
 
 class SubscriberDetailSerializer(serializers.ModelSerializer):
@@ -308,3 +321,10 @@ class PasswordSerializer(serializers.ModelSerializer):
         if password != password2:
             raise serializers.ValidationError('Fields must be equal')
         return attrs
+
+
+class SettingsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Settings
+        fields = '__all__'

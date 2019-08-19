@@ -123,13 +123,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DATETIME_FORMAT': "%d/%m/%Y %H:%M:%S",
-    "DATETIME_INPUT_FORMATS": ["%d/%m/%Y %H:%M:%S"],
+    'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
+    "DATETIME_INPUT_FORMATS": ["%m/%d/%Y %H:%M:%S"],
 }
-
-KIND_PERIOD = 'MONTHS'
-
-KIND_PAYMENT = 'PREPAYMENT'
 
 MAX_BOUQUETS = 127
 
