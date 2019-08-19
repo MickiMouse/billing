@@ -1,4 +1,4 @@
 Dear, {{ user.username }}
 
 Please confirm your account
-{{ host }}{% url 'main:register_activate' sign=sign %}
+{{ host }}
