@@ -1,3 +1,5 @@
+certifi==2019.6.16
+chardet==3.0.4
 Django==2.2.3
 django-cors-headers==3.0.2
 django-templated-mail==1.1.1
@@ -7,11 +9,18 @@ djangorestframework-jwt==1.11.0
 djangorestframework-simplejwt==4.3.0
 djoser==2.0.1
 gunicorn==19.9.0
+idna==2.8
 inflection==0.3.1
+Naked==0.1.31
 psycopg2==2.8.3
 psycopg2-binary==2.8.3
+pycrypto==2.6.1
 PyJWT==1.7.1
 python-dateutil==2.8.0
 pytz==2019.1
+PyYAML==5.1.2
+requests==2.22.0
+shellescape==3.4.1
 six==1.12.0
 sqlparse==0.3.0
+urllib3==1.25.3

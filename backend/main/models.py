@@ -60,7 +60,7 @@ class Bouquet(models.Model):
     age_limit = models.IntegerField(verbose_name='Age limit',
                                     blank=True, null=True)
     packages = models.ManyToManyField('Packet', blank=True, null=True,
-                                      related_name='bouquets',)
+                                      related_name='bouquets')
 
     def __str__(self):
         return '%d %s' % (self.number, self.name)
@@ -83,9 +83,9 @@ class Packet(models.Model):
 
 class Card(models.Model):
     STATUS = [
-        ('A', 'Active'),
-        ('I', 'Inactive'),
-        ('E', 'Expired'),
+        ('Active', 'Active'),
+        ('Inactive', 'Inactive'),
+        ('Expired', 'Expired'),
     ]
     reseller = models.ForeignKey(User, on_delete=models.PROTECT, default=get_admin, related_name='cards')
     created_at = models.DateTimeField(verbose_name='Created_at', auto_now_add=True)
