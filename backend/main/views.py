@@ -320,10 +320,16 @@ class CardForceUpdatePackageView(generics.UpdateAPIView):
                             status=HTTP_400_BAD_REQUEST)
         data.append(package.first())
         card.packages.set(data)
-        new_price = card.price()
         card.save()
-        # if settings.kind_payment == 'VIRTUAL':
-
+        new_price = card.price()
+        if settings.kind_payment == 'VIRTUAL':
+            subscriber = card.subscriber
+            diff = new_price - old_price
+            if subscriber.balance - diff >= 0:
+                subscriber.balance -= diff
+                subscriber.save()
+            else:
+                return Response({'errors': 'Not enough money in the account'})
         log = 'DATE: {}; ID CARD: {}; LOG: Add package {};'
         logging(LogsCard, card, log, package.first().header)
         serializer = self.get_serializer(instance=card)
