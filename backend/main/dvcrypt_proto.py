@@ -266,7 +266,7 @@ class DVCrypt(object):
         except KeyError:
             raise UnknownData('Unknown Error. Data field is missing', result)
 
-    def subscriber_set(self, start, stop, subscription, priority = 'low'):
+    def subscriber_set(self, start, stop, subscription, priority='low'):
         """
             Set subscribers data by card number. Batch write acceptable, recommended up to 50 per request
 

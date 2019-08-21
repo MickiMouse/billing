@@ -25,16 +25,18 @@ class Command(BaseCommand):
             detail[i] = b
         for i in detail:
             obj, created = Bouquet.objects.get_or_create(number=i)
-            obj.name = detail[i]['name']
-            print(obj.name)
-            obj.age_limit = detail[i]['parental']
-            print(obj.age_limit)
-            obj.save()
-            print('SAVED')
+            if created:
+                obj.name = detail[i]['name']
+                obj.age_limit = detail[i]['parental']
+                obj.save()
+                print(obj.name)
+                print(obj.age_limit)
+                print('SAVED')
         for i in range(bouquets, max_bouquets):
             try:
                 obj = Bouquet.objects.get(number=i)
-                obj.delete()
+                if not obj.packages.exists():
+                    obj.delete()
             except Bouquet.DoesNotExist:
                 pass
         d.logout()

@@ -8,6 +8,7 @@ from .models import (
     Packet,
     Bouquet,
     Settings,
+    LogsCard,
     user_registrated,
 )
 
@@ -67,12 +68,50 @@ class ResellerShortDescriptionSerializer(serializers.ModelSerializer):
         fields = ('pk', 'email')
 
 
-class ResellerSerializer(serializers.ModelSerializer):
+class ResellerListSerializer(serializers.ModelSerializer):
     """Serializer for Reseller"""
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('pk',
+                  'rrr',
+                  'email',
+                  'username',
+                  'balance')
+
+
+class CardSerializer(serializers.ModelSerializer):
+    """Serializer for Card"""
+
+    class Meta:
+        model = Card
+        fields = ('pk',
+                  'created_at',
+                  'last_change',
+                  'expired_date',
+                  'status',
+                  'label')
+
+
+class ResellerDetailSerializer(serializers.ModelSerializer):
+    cards = CardSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ('username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'rrr',
+                  'address',
+                  'telephone',
+                  'zone',
+                  'balance',
+                  'credit',
+                  'price_card',
+                  'is_activated',
+                  'comment',
+                  'cards')
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -181,24 +220,13 @@ class SubscriberSerializer(serializers.ModelSerializer):
                   'cards')
 
 
-class CardSerializer(serializers.ModelSerializer):
-    """Serializer for Card"""
+class CardSuspendSubscribtionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Card
-        fields = ('pk',
-                  'created_at',
-                  'last_change',
-                  'expired_date',
-                  'status',
-                  'label')
-
-
-class CardUpdateStatusSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Card
-        fields = ('status',)
+        fields = ('suspend',
+                  'suspend_date',
+                  'expired_date')
 
 
 class CardUpdateExpiredSerializer(serializers.ModelSerializer):
@@ -252,7 +280,9 @@ class SubscriberEditBalanceSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         balance = attrs['balance']
         if balance <= 0:
-            raise serializers.ValidationError('Balance cannot be less or equal zero')
+            raise serializers.ValidationError(
+                'Balance cannot be less or equal zero'
+            )
         return attrs
 
 
@@ -264,10 +294,19 @@ class CardCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class LogsCardSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LogsCard
+        fields = ('log',
+                  'date')
+
+
 class CardDetailSerializer(serializers.ModelSerializer):
     packages = PackageListSerializer(many=True)
     reseller = ResellerShortDescriptionSerializer()
     subscriber = SubscriberSerializer()
+    logs = LogsCardSerializer(many=True)
 
     class Meta:
         model = Card
@@ -280,7 +319,8 @@ class CardDetailSerializer(serializers.ModelSerializer):
                   'packages',
                   'price',
                   'reseller',
-                  'subscriber')
+                  'subscriber',
+                  'logs',)
 
 
 class PasswordRequestSerializer(serializers.ModelSerializer):

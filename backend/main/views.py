@@ -1,5 +1,6 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from django.db import models
 from django.shortcuts import get_object_or_404
 from django.core.signing import BadSignature
 from django.contrib.auth import get_user_model
@@ -23,11 +24,15 @@ from .models import (
     Card,
     Subscriber,
     Settings,
+    LogsCard,
+    LogsSubscriber,
+    LogsReseller,
     reset_password,
 )
 from .serializer import (
     ResellerCreateSerializer,
-    ResellerSerializer,
+    ResellerListSerializer,
+    ResellerDetailSerializer,
     PackageListSerializer,
     PackageDetailSerializer,
     PackageCreateSerializer,
@@ -36,8 +41,8 @@ from .serializer import (
     CardSerializer,
     CardCreateSerializer,
     CardDetailSerializer,
-    CardUpdateStatusSerializer,
     CardUpdateExpiredSerializer,
+    CardSuspendSubscribtionSerializer,
     SubscriberSerializer,
     SubscriberDetailSerializer,
     SubscriberEditCardsSerializer,
@@ -50,6 +55,33 @@ from .serializer import (
 )
 from .utilities import signer
 from .api import Command
+
+
+def logging(class_, instance, text, *args):
+    try:
+        getattr(class_, 'card')
+        log = class_.objects.create(card=instance)
+        log.log = text.format(log.date, instance.id, *args)
+        log.save()
+    except AttributeError:
+        pass
+
+    try:
+        getattr(class_, 'subscriber')
+        log = class_.objects.create(subscriber=instance)
+        log.log = text.format(log.date, instance.id, *args)
+        log.save()
+    except AttributeError:
+        pass
+
+    try:
+        getattr(class_, 'reseller')
+        log = class_.objects.create(reseller=instance)
+        log.log = text.format(log.date, instance.id, *args)
+        log.save()
+    except AttributeError:
+        pass
+
 
 User = get_user_model()
 
@@ -66,7 +98,7 @@ class TokenCreateView(APIView):
         if token.exists():
             return Response({'auth_token': token.first().key, 'is_superuser': user.is_superuser})
         else:
-            if user.check_password(password):
+            if user.check_password(password) and user.is_activated:
                 token = Token.objects.create(user=user)
                 return Response({'auth_token': token.key, 'is_superuser': user.is_superuser})
             else:
@@ -107,20 +139,28 @@ class ResellerActivateAPIView(generics.GenericAPIView):
             user.is_active = True
             user.is_activated = True
             user.save()
-            serializer = ResellerSerializer(user)
+            log = 'DATE: {}; ID RESELLER: {}; LOG: Registered;'
+            logging(LogsReseller, user, log)
+            serializer = ResellerDetailSerializer(user)
             return Response(serializer.data, status=HTTP_200_OK)
 
 
 class ResellerListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
-    serializer_class = ResellerSerializer
+    serializer_class = ResellerListSerializer
     queryset = User.objects.all()
 
 
 class ResellerDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated, IsAdminUser]
-    serializer_class = ResellerSerializer
+    permission_classes = [IsAuthenticated]
+    serializer_class = ResellerDetailSerializer
+
+
+class ResellerEditView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = ResellerDetailSerializer
 
 
 class PackageListView(generics.ListAPIView):
@@ -136,8 +176,7 @@ class PackageFilterListView(generics.ListAPIView):
     queryset = Packet.objects.all()
 
     def get(self, request, *args, **kwargs):
-        pk = kwargs['pk']
-        card = Card.objects.get(pk=pk)
+        card = Card.objects.get(pk=kwargs['pk'])
         packages = Packet.objects.all().difference(card.packages.all())
         serializer = self.get_serializer(packages, many=True)
         return Response(serializer.data)
@@ -171,15 +210,11 @@ class PackageEditView(generics.UpdateAPIView):
     queryset = Packet.objects.all()
 
 
-class CardListView(APIView):
+class CardListView(generics.ListAPIView):
     """Show list of Cards for owner"""
+    queryset = Card.objects.all()
     permission_classes = [IsOwner, IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        cards = Card.objects.filter(reseller=user)
-        serializer = CardSerializer(cards, many=True)
-        return Response(serializer.data)
+    serializer_class = CardSerializer
 
 
 class CardCreateView(generics.CreateAPIView):
@@ -187,6 +222,39 @@ class CardCreateView(generics.CreateAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = CardCreateSerializer
     queryset = Card.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        pk = Card.objects.aggregate(maxpk=models.Max('pk'))['maxpk']
+        card, created = Card.objects.get_or_create(pk=pk+1)
+        print(card, created)
+        if created:
+            log = 'DATE: {}; ID CARD: {}; LOG: Created card;'
+            logging(LogsCard, card, log)
+        serializer = self.get_serializer(instance=card)
+        return Response(serializer.data, status=HTTP_201_CREATED)
+
+
+class CreateRangeCardView(generics.ListCreateAPIView):
+    queryset = Card.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = CardCreateSerializer
+
+    def get(self, request, *args, **kwargs):
+        max_pk = Card.objects.aggregate(max_pk=models.Max('pk'))['max_pk']
+        return Response({'start': max_pk + 1})
+
+    def create(self, request, *args, **kwargs):
+        start = request.data.get('start')
+        stop = request.data.get('stop')
+        created_cards = []
+        for i in range(start, stop + 1):
+            card, created = Card.objects.get_or_create(pk=i)
+            if created:
+                created_cards.append(card)
+                log = 'DATE: {}; ID CARD: {}; LOG: Created card;'
+                logging(LogsCard, card, log)
+        serializer = self.get_serializer(created_cards, many=True)
+        return Response(serializer.data, status=HTTP_201_CREATED)
 
 
 class CardDetailView(generics.RetrieveAPIView):
@@ -201,15 +269,21 @@ class CardUpdateExpiredView(generics.UpdateAPIView):
     queryset = Card.objects.all()
 
     def put(self, request, *args, **kwargs):
-        pk = kwargs['pk']
         period = int(request.data.get('period'))
-        if period == 0:
-            return Response({'detail': 'Period cannot equal to 0'},
+
+        if period <= 0:
+            return Response({'detail': 'Period cannot equal to 0 or less 0'},
                             status=HTTP_400_BAD_REQUEST)
+
         settings = Settings.objects.first()
-        card = Card.objects.get(pk=pk)
+        card = Card.objects.get(pk=kwargs['pk'])
+
+        if card.status() == 'Inactive' or card.status() == 'Suspend':
+            return Response({'errors': 'Cannot update expired date'})
+
         quantity = settings.quantity
         total_period = period * quantity
+
         if settings.kind_payment == 'PREPAYMENT':
             if settings.kind_period == 'MONTHS':
                 card.expired_date = datetime.now() + relativedelta(months=total_period)
@@ -220,24 +294,21 @@ class CardUpdateExpiredView(generics.UpdateAPIView):
         else:
             return Response({'detail': 'Cannot renew subscription'},
                             status=HTTP_400_BAD_REQUEST)
+
         card.save(update_fields=['expired_date'])
+        log = 'DATE: {}; ID CARD: {}; LOG: Update expired date {};'
+        logging(LogsCard, card, log, card.expired_date)
         serializer = self.get_serializer(instance=card)
         return Response(serializer.data)
 
 
-class CardUpdateStatusView(generics.UpdateAPIView):
-    permission_classes = [IsOwner, IsAuthenticated]
-    serializer_class = CardUpdateStatusSerializer
+class CardForceUpdatePackageView(generics.UpdateAPIView):
     queryset = Card.objects.all()
-
-
-class CardUpdatePackageView(APIView):
     permission_classes = [IsOwner, IsAuthenticated]
+    serializer_class = CardSerializer
 
-    def put(self, request, **kwargs):
-        pk = kwargs['pk']
-        card = Card.objects.get(pk=pk)
-        # if card.expired_date is None:
+    def put(self, request, *args, **kwargs):
+        card = Card.objects.get(pk=kwargs['pk'])
         cardPackages = card.packages.all()
         data = list(cardPackages)
         package_pk = request.data.get('package')
@@ -248,14 +319,16 @@ class CardUpdatePackageView(APIView):
         data.append(package.first())
         card.packages.set(data)
         card.save()
-        serializer = CardSerializer(card)
+        log = 'DATE: {}; ID CARD: {}; LOG: Add package {};'
+        logging(LogsCard, card, log, package.first().header)
+        serializer = self.get_serializer(instance=card)
         return Response(serializer.data)
-        # return Response({'detail': 'You can add packages when card will be expired'},
-        #                 status=HTTP_400_BAD_REQUEST)
 
 
-class CardRemovePackageView(APIView):
+class CardRemovePackageView(generics.UpdateAPIView):
+    queryset = Card.objects.all()
     permission_classes = [IsOwner, IsAuthenticated]
+    serializer_class = CardSerializer
 
     def put(self, request, **kwargs):
         pk = kwargs['pk']
@@ -270,7 +343,24 @@ class CardRemovePackageView(APIView):
         data.remove(package.first())
         card.packages.set(data)
         card.save()
-        serializer = CardSerializer(card)
+        log = 'DATE: {}; ID CARD: {}; LOG: Remove package {};'
+        logging(LogsCard, card, log, package.first().header)
+        serializer = self.get_serializer(instance=card)
+        return Response(serializer.data)
+
+
+class CardDeleteView(generics.DestroyAPIView):
+    queryset = Card.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = CardSerializer
+
+    def delete(self, request, *args, **kwargs):
+        card = Card.objects.get(pk=kwargs['pk'])
+        if card.delete_date() > datetime.now():
+            log = 'DATE: {}; ID CARD: {}; LOG: Remove card;'
+            logging(LogsCard, card, log)
+            card.delete()
+        serializer = self.get_serializer(instance=card)
         return Response(serializer.data)
 
 
@@ -298,6 +388,12 @@ class SubscriberDetailView(generics.RetrieveAPIView):
     serializer_class = SubscriberDetailSerializer
 
 
+class SubscriberEditView(generics.UpdateAPIView):
+    queryset = Subscriber.objects.all()
+    permission_classes = [IsOwner, IsAuthenticated]
+    serializer_class = SubscriberCreateSerializer
+
+
 class SubscriberCreateView(generics.CreateAPIView):
     permission_classes = [IsOwner, IsAuthenticated]
     serializer_class = SubscriberCreateSerializer
@@ -313,6 +409,8 @@ class SubscriberCreateView(generics.CreateAPIView):
             address=request.data.get('address'),
             telephone=request.data.get('telephone')
         )
+        log = 'DATE: {}; ID SUBSCRIBER: {}; LOG: Created;'
+        logging(LogsSubscriber, subscriber, log)
         serializer = SubscriberDetailSerializer(subscriber)
         return Response(serializer.data, status=HTTP_201_CREATED)
 
@@ -327,6 +425,8 @@ class SubscriberDeleteView(generics.DestroyAPIView):
         subscriber = Subscriber.objects.get(pk=pk)
         subscriber.cards.clear()
         subscriber.delete()
+        log = 'DATE: {}; ID SUBSCRIBER: {}; LOG: Deleted;'
+        logging(LogsSubscriber, subscriber, log)
         return Response(data={'message': 'Deleted'},
                         status=HTTP_200_OK)
 
@@ -341,32 +441,48 @@ class SubscriberUpdateCardsView(APIView):
         return Response(serializer.data)
 
     def put(self, request, **kwargs):
-        pk = kwargs['pk']
         settings = Settings.objects.first()
-        subscriber = Subscriber.objects.get(pk=pk)
+        subscriber = Subscriber.objects.get(pk=kwargs['pk'])
         subscriberCards = subscriber.cards.all()
         data = list(subscriberCards)
         card_pk = request.data.get('card')
         card = Card.objects.get(pk=card_pk)
+        reseller = subscriber.reseller
+
         if card in subscriberCards:
             return Response({'detail': 'This card already exists'},
                             status=HTTP_400_BAD_REQUEST)
+
         if settings.kind_payment == 'VIRTUAL':
+
             if subscriber.balance - card.price() < 0:
                 return Response({'detail': 'Cannot add card.'},
                                 status=HTTP_400_BAD_REQUEST)
+
             period = int(settings.quantity)
+
             if settings.kind_period == 'MONTHS':
                 card.expired_date = datetime.now() + relativedelta(months=period)
             elif settings.kind_period == 'WEEKS':
                 card.expired_date = datetime.now() + relativedelta(weeks=period)
             elif settings.kind_period == 'DAYS':
                 card.expired_date = datetime.now() + relativedelta(minutes=period)
+
             card.save(update_fields=['expired_date'])
+            log = 'DATE: {}; ID CARD: {}; LOG: Update expired date - {};'
+            logging(LogsCard, card, log, card.expired_date)
             subscriber.balance -= card.price()
+            log = 'DATE: {}; ID SUBSCRIBER: {}; LOG: Payed. Balance - {}, Price - {};'
+            logging(LogsSubscriber, subscriber, log, subscriber.balance, card.price())
+
         data.append(card)
         subscriber.cards.set(data)
         subscriber.save()
+        log = 'DATE: {}; ID CARD: {}; LOG: Reseller ({}, {}, {}) handed subscriber ({}, {}, {}) the card;'
+        logging(LogsCard, card, log, reseller.id, reseller.username, reseller.email,
+                subscriber.id, subscriber.first_name, subscriber.last_name)
+        log = 'DATE: {}; ID SUBSCRIBER: {}; LOG: Get card (id - {});'
+        logging(LogsSubscriber, subscriber, log, card.id)
         serializer = SubscriberEditCardsSerializer(subscriber)
         return Response(serializer.data)
 
@@ -387,6 +503,10 @@ class SubscriberDeleteCardView(APIView):
         data.remove(querysetcard.first())
         subscriber.cards.set(data)
         subscriber.save()
+        reseller = subscriber.reseller
+        log = 'DATE: {}; ID CARD: {}; LOG: Reseller ({}, {}, {}) pick up the card from subscriber ({}, {}, {});'
+        logging(LogsCard, querysetcard.first(), log, reseller.id, reseller.username, reseller.email,
+                subscriber.id, subscriber.first_name, subscriber.last_name)
         serializer = SubscriberEditCardsSerializer(subscriber)
         return Response(serializer.data)
 
@@ -414,6 +534,8 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
                 user.balance -= new_balance
         user.save(update_fields=['balance'])
         subscriber.save(update_fields=['balance'])
+        log = 'DATE: {}; ID SUBSCRIBER: {}; LOG: Edit balance. New value - {};'
+        logging(LogsSubscriber, subscriber, log, subscriber.balance)
         serializer = self.get_serializer(instance=subscriber)
         return Response(serializer.data)
 
@@ -529,3 +651,94 @@ class ChangeSettingsView(generics.UpdateAPIView):
         settings.save()
         serializer = self.get_serializer(instance=settings)
         return Response(serializer.data)
+
+
+class EnableSuspendSubscriptionView(generics.UpdateAPIView):
+    queryset = Card.objects.all()
+    permission_classes = [IsOwner, IsAuthenticated]
+    serializer_class = CardSuspendSubscribtionSerializer
+
+    def put(self, request, *args, **kwargs):
+        card = Card.objects.get(pk=kwargs['pk'])
+        if not card.suspend:
+            card.suspend_date = datetime.now()
+            card.suspend = True
+            card.save(update_fields=['suspend', 'suspend_date'])
+            reseller = card.reseller
+            log = 'DATE: {}; ID CARD: {}; LOG: Reseller ({}, {}, {}) enable suspend subscription;'
+            logging(LogsCard, card, log, reseller.id, reseller.username, reseller.email)
+            serializer = self.get_serializer(instance=card)
+            return Response(serializer.data)
+        return Response(self.get_serializer(instance=card).data)
+
+
+class DisableSuspendSubscriptionView(generics.UpdateAPIView):
+    queryset = Card.objects.all()
+    permission_classes = [IsOwner, IsAuthenticated]
+    serializer_class = CardSuspendSubscribtionSerializer
+
+    def put(self, request, *args, **kwargs):
+        card = Card.objects.get(pk=kwargs['pk'])
+        if card.suspend:
+            card.expired_date = datetime.now() + card.suspend_interval()
+            card.suspend = False
+            card.save(update_fields=['suspend', 'expired_date'])
+            reseller = card.reseller
+            log = 'DATE: {}; ID CARD: {}; LOG: Reseller ({}, {}, {}) disable suspend subscription;'
+            logging(LogsCard, card, log, reseller.id, reseller.username, reseller.email)
+            serializer = self.get_serializer(instance=card)
+            return Response(serializer.data)
+        return Response(self.get_serializer(instance=card).data)
+
+
+class TieCardsToResellerView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = ResellerDetailSerializer
+
+    def put(self, request, *args, **kwargs):
+        user = User.objects.get(pk=kwargs['pk'])
+        start = int(request.data.get('start'))
+        stop = int(request.data.get('stop'))
+        tied_cards = []
+        for i in range(start, stop + 1):
+            try:
+                card = Card.objects.get(pk=i)
+            except Card.DoesNotExist:
+                return Response({'errors': 'Invalid start or stop'})
+            tied_cards.append(card)
+            log = 'DATE: {}; ID CARD: {}; LOG: Tie card to reseller ({}, {}, {})'
+            logging(LogsCard, card, log, user.id, user.username, user.email)
+        user.cards.set(tied_cards)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+
+
+class PickUpCardsFromReseller(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = ResellerDetailSerializer
+
+    def put(self, request, *args, **kwargs):
+        pk = request.data.get('pk')
+        user = User.objects.get(pk=kwargs['pk'])
+        card = Card.objects.get(reseller=user, pk=pk)
+        if not user.is_superuser:
+            card.reseller = User.objects.get(is_superuser=True)
+        card.save()
+        log = 'DATE: {}; ID CARD: {}; LOG: Pick up card from reseller ({}, {}, {})'
+        logging(LogsCard, card, log, user.id, user.username, user.email)
+        serializer = self.get_serializer(instance=user)
+        return Response(serializer.data)
+
+
+# class GetLogsCardView(generics.ListAPIView):
+#     queryset = LogsCard.objects.all()
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = LogsCardSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         card = Card.objects.get(pk=kwargs['pk'])
+#         log = card.logs
+#         serializer = self.get_serializer(log, many=True)
+#         return Response(serializer.data)

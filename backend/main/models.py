@@ -79,7 +79,7 @@ User = get_user_model()
 
 
 def get_admin():
-    return User.objects.get(username='admin').pk
+    return User.objects.get(is_superuser=True).pk
 
 
 class Bouquet(models.Model):
@@ -111,11 +111,13 @@ class Packet(models.Model):
 
 class Card(models.Model):
     reseller = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=get_admin, related_name='cards')
-    created_at = models.DateTimeField(verbose_name='Created_at', auto_now_add=True)
-    last_change = models.DateTimeField(verbose_name='Last_change', auto_now=True, blank=True)
+    created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
+    last_change = models.DateTimeField(verbose_name='Last change', auto_now=True, blank=True)
     expired_date = models.DateTimeField(verbose_name='Expired date', blank=True, null=True)
     subscriber = models.ForeignKey('Subscriber', on_delete=models.PROTECT, related_name='cards',
                                    null=True, blank=True)
+    suspend_date = models.DateTimeField(verbose_name='Suspend date', blank=True, null=True)
+    suspend = models.BooleanField(verbose_name='Suspend', default=False, db_index=True)
 
     def label(self):
         zero = '000000'
@@ -135,15 +137,22 @@ class Card(models.Model):
     def status(self):
         if self.expired_date is None:
             return 'Inactive'
+        elif self.suspend:
+            return 'Suspend'
         else:
             if self.expired_date > datetime.now():
                 return 'Active'
             else:
                 settings = Settings.objects.first()
                 if settings.kind_payment == 'VIRTUAL':
-                    pay_subscription.send(sender=Card, card=self,
-                                          settings=settings)
+                    pay_subscription.send(sender=Card, card=self, settings=settings)
                 return 'Expired'
+
+    def suspend_interval(self):
+        return relativedelta(dt1=self.expired_date, dt2=self.suspend_date)
+
+    def delete_date(self):
+        return self.created_at + relativedelta(days=3)
 
     def __str__(self):
         return '%s %d' % (self.label(), self.pk)
@@ -166,3 +175,33 @@ class Settings(models.Model):
     kind_payment = models.CharField(verbose_name='payment', max_length=10, default='PREPAYMENT')
     kind_period = models.CharField(verbose_name='period', max_length=10, default='MONTHS')
     quantity = models.IntegerField(verbose_name='quantity', default=1)
+
+
+class Logs(models.Model):
+    log = models.CharField(verbose_name='Log', max_length=100, blank=True, null=True)
+    date = models.DateTimeField(verbose_name='Created', auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        ordering = ['date']
+
+
+class LogsCard(Logs):
+    card = models.ForeignKey(Card, on_delete=models.PROTECT, related_name='logs')
+
+    class Meta(Logs.Meta):
+        pass
+
+
+class LogsSubscriber(Logs):
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.PROTECT, related_name='logs')
+
+    class Meta(Logs.Meta):
+        pass
+
+
+class LogsReseller(Logs):
+    reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='logs')
+
+    class Meta(Logs.Meta):
+        pass
