@@ -308,7 +308,9 @@ class CardForceUpdatePackageView(generics.UpdateAPIView):
     serializer_class = CardSerializer
 
     def put(self, request, *args, **kwargs):
+        settings = Settings.objects.first()
         card = Card.objects.get(pk=kwargs['pk'])
+        old_price = card.price()
         cardPackages = card.packages.all()
         data = list(cardPackages)
         package_pk = request.data.get('package')
@@ -318,7 +320,10 @@ class CardForceUpdatePackageView(generics.UpdateAPIView):
                             status=HTTP_400_BAD_REQUEST)
         data.append(package.first())
         card.packages.set(data)
+        new_price = card.price()
         card.save()
+        # if settings.kind_payment == 'VIRTUAL':
+
         log = 'DATE: {}; ID CARD: {}; LOG: Add package {};'
         logging(LogsCard, card, log, package.first().header)
         serializer = self.get_serializer(instance=card)

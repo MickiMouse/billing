@@ -178,7 +178,7 @@ class Settings(models.Model):
 
 
 class Logs(models.Model):
-    log = models.CharField(verbose_name='Log', max_length=100, blank=True, null=True)
+    log = models.CharField(verbose_name='Log', max_length=200, blank=True, null=True)
     date = models.DateTimeField(verbose_name='Created', auto_now_add=True)
 
     class Meta:
