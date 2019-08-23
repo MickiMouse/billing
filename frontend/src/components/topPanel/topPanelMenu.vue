@@ -5,8 +5,8 @@
                          clipped
                          v-model="menuVisible">
         <v-divider/>
-        <v-list dense class="pt-0">
-            <v-list-tile>
+        <v-list dense :class="{'pt-3 mt-5': $vuetify.breakpoint.mdAndDown, 'pt-0 mt-0': $vuetify.breakpoint.lgAndUp}">
+            <v-list-tile  >
                 <v-list-tile-content>
                     <v-list-tile-title>
                         <span>Menu</span>

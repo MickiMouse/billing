@@ -1,6 +1,54 @@
 <template>
     <v-content color="primary">
         <v-container fluid id="main-container" grid-list-md fill-height>
+            <v-dialog v-model="addManyCards" persistent max-width="290" v-if="this.$session.get('isSuperuser')">
+                <v-form ref="formManyCards">
+                    <v-card>
+                        <!--<v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>-->
+                        <v-card-text>
+                            <v-row>
+                                <v-col class="px-4">
+                                    <v-range-slider
+                                            v-model="range"
+                                            :max="max"
+                                            :min="min"
+                                            hide-details
+                                            class="align-center"
+                                    >
+                                        <template v-slot:prepend>
+                                            <v-text-field
+                                                    v-model="range[0]"
+                                                    :rules="[rules.counterRange, rules.numberRange]"
+                                                    class="mt-0 pt-0"
+                                                    hide-details
+                                                    single-line
+                                                    type="number"
+                                                    style="width: 60px"
+                                            ></v-text-field>
+                                        </template>
+                                        <template v-slot:append>
+                                            <v-text-field
+                                                    v-model="range[1]"
+                                                    :rules="[rules.counterRange, rules.numberRange]"
+                                                    class="mt-0 pt-0"
+                                                    hide-details
+                                                    single-line
+                                                    type="number"
+                                                    style="width: 60px"
+                                            ></v-text-field>
+                                        </template>
+                                    </v-range-slider>
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn outline small color="error" @click.stop="addManyCards = false">Close</v-btn>
+                            <v-btn small text color="primary" @click.stop="applyManyCards">Add</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-form>
+            </v-dialog>
             <v-snackbar
                     v-model="snackbar"
                     :timeout="timeout"
@@ -54,11 +102,49 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Name</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.first_name}} {{details.last_name}}
-                                    </v-list-tile-sub-title>
+                                    <p class="mb-0">{{details.first_name}} {{details.last_name}}
+                                    </p>
                                 </v-list-tile-content>
                             </v-list-tile>
-
+                            <v-list-tile
+                                    avatar
+                                    @click=""
+                            >
+                                <v-list-tile-avatar>
+                                    <v-icon class="grey lighten-1 white--text">person</v-icon>
+                                </v-list-tile-avatar>
+                                <v-list-tile-content>
+                                    <v-list-tile-title>Username</v-list-tile-title>
+                                    <p class="mb-0">{{details.username}}
+                                    </p>
+                                </v-list-tile-content>
+                            </v-list-tile>
+                            <v-list-tile
+                                    avatar
+                                    @click=""
+                            >
+                                <v-list-tile-avatar>
+                                    <v-icon class="grey lighten-1 white--text">branding_watermark</v-icon>
+                                </v-list-tile-avatar>
+                                <v-list-tile-content>
+                                    <v-list-tile-title>RRR</v-list-tile-title>
+                                    <p class="mb-0">{{details.rrr}}
+                                    </p>
+                                </v-list-tile-content>
+                            </v-list-tile>
+                            <v-list-tile
+                                    avatar
+                                    @click=""
+                            >
+                                <v-list-tile-avatar>
+                                    <v-icon class="grey lighten-1 white--text">check</v-icon>
+                                </v-list-tile-avatar>
+                                <v-list-tile-content>
+                                    <v-list-tile-title>Status verification</v-list-tile-title>
+                                    <p class="mb-0">{{details.is_activated}}
+                                    </p>
+                                </v-list-tile-content>
+                            </v-list-tile>
                             <v-list-tile
                                     v-if="!$store.getters.isPREPAYMENT"
                                     avatar
@@ -69,7 +155,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Balance</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.balance}}</v-list-tile-sub-title>
+                                    <p class="mb-0">{{details.balance}}</p>
                                 </v-list-tile-content>
                                 <v-list-tile-action>
                                     <v-dialog v-model="dialog" persistent max-width="600px">
@@ -107,6 +193,19 @@
                                 </v-list-tile-action>
                             </v-list-tile>
                             <v-list-tile
+                                    v-if="!$store.getters.isPREPAYMENT"
+                                    avatar
+                                    @click=""
+                            >
+                                <v-list-tile-avatar>
+                                    <v-icon class="grey lighten-1 white--text">account_balance_wallet</v-icon>
+                                </v-list-tile-avatar>
+                                <v-list-tile-content>
+                                    <v-list-tile-title>Credit</v-list-tile-title>
+                                    <p class="mb-0">{{details.credit}}</p>
+                                </v-list-tile-content>
+                            </v-list-tile>
+                            <v-list-tile
                                     avatar
                                     @click=""
                             >
@@ -114,9 +213,8 @@
                                     <v-icon class="grey lighten-1 white--text">card_membership</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Cards price</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{totalPrice}}
-                                    </v-list-tile-sub-title>
+                                    <v-list-tile-title>Card price</v-list-tile-title>
+                                    <p class="mb-0">{{details.price_card}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile
@@ -128,7 +226,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Email</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.email}}</v-list-tile-sub-title>
+                                    <p class="mb-0">{{details.email}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile
@@ -140,7 +238,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Phone</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.telephone}}</v-list-tile-sub-title>
+                                    <p class="mb-0">{{details.telephone}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile
@@ -152,7 +250,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Address</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.address}}</v-list-tile-sub-title>
+                                    <p class="mb-0">{{details.address}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile
@@ -160,11 +258,24 @@
                                     @click=""
                             >
                                 <v-list-tile-avatar>
-                                    <v-icon class="grey lighten-1 white--text">people</v-icon>
+                                    <v-icon class="grey lighten-1 white--text">place</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Reseller</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.reseller.email}}</v-list-tile-sub-title>
+                                    <v-list-tile-title>Zone</v-list-tile-title>
+                                    <p class="mb-0">{{details.zone}}</p>
+                                </v-list-tile-content>
+                            </v-list-tile>
+                            <v-list-tile
+                                    avatar
+                                    @click=""
+                            >
+                                <v-list-tile-avatar>
+                                    <v-icon class="grey lighten-1 white--text">comment</v-icon>
+                                </v-list-tile-avatar>
+                                <v-list-tile-content>
+                                    <v-list-tile-title>Comment</v-list-tile-title>
+                                    <p class="mb-0">{{details.comment}}
+                                    </p>
                                 </v-list-tile-content>
                             </v-list-tile>
                         </v-list>
@@ -220,7 +331,6 @@
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
-                                <td class="text-xs-left no-wrap">{{ props.item.price }}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -258,7 +368,6 @@
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
-                                <td class="text-xs-left no-wrap">{{ props.item.price }}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -286,16 +395,27 @@
 
                 </v-flex>
             </v-layout>
+            <v-btn
+                    color="primary"
+                    dark
+                    fixed
+                    bottom
+                    right
+                    fab
+                    transition="slide-y-transition"
+                    v-if="$session.get('isSuperuser') && aviableCards"
+            >
+                <v-icon @click.stop="addManyCards = true">library_add</v-icon>
+            </v-btn>
         </v-container>
     </v-content>
-
 </template>
 
 <script>
     import axios from 'axios';
 
     export default {
-        name: "SubscribersDetails",
+        name: "ResellersDetails",
         data() {
             return {
                 snack: false,
@@ -308,20 +428,16 @@
                 dialog: false,
                 deleteDialog: false,
                 search: '',
-                searchLogs: '',
+                searchLogs:'',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 newBalance: '',
+                addManyCards: false,
                 details: {
                     address: "",
                     balance: 0,
                     cards: Array(0),
                     email: '',
-                    first_name: "",
-                    id: 0,
-                    last_name: "",
-                    reseller: 0,
-                    telephone: ""
                 },
 
                 headers: [
@@ -330,12 +446,6 @@
                         align: 'left',
                         //  sortable: false,
                         value: 'label',
-                    },
-                    {
-                        text: 'Price',
-                        align: 'left',
-                        //  sortable: false,
-                        value: 'price',
                     },
                     {text: 'Action', value: 'action', sortable: false},
                     // {text: 'Calories', value: 'calories'},
@@ -353,9 +463,16 @@
                 ],
                 cards: [],
                 aviableCards: [],
+                min: 1,
+                range: [],
                 rules: {
                     counter: value => value <= 2147483647 || 'Max 2147483647',
                     number: value => {
+                        const pattern = /^\d+$/;
+                        return pattern.test(value) || 'Invalid number.'
+                    },
+                    counterRange: value => (value <= 2147483647 && value >= 1) || 'Min 1 and Max 2147483647',
+                    numberRange: value => {
                         const pattern = /^\d+$/;
                         return pattern.test(value) || 'Invalid number.'
                     },
@@ -363,25 +480,22 @@
             }
         },
         computed: {
-            totalPrice() {
-                let total = 0;
-                this.details.cards.forEach((item) => {
-                    total += item.price
-                });
-                return total;
-            }
+            max() {
+                return this.min + 99;
+            },
         },
         methods: {
             getData() {
                 this.loadingCards = true;
-                axios.get(`${this.$hostname}/api/subscribers/${this.$route.params.id}/`)
+                axios.get(`${this.$hostname}/api/resellers/${this.$route.params.id}/`)
                     .then((response) => {
                         if (response.status === 200) {
+                            console.log(response.data)
                             this.details = response.data;
                             this.cards = this.details.cards;
                             this.newBalance = this.details.balance;
                             this.loadingCards = false;
-                            console.log(response.data)
+                            this.details.is_activated = this.details.is_activated ? 'Active' : 'Inactive';
                         }
                     }).catch((error) => {
                     this.text = "Connection error";
@@ -389,12 +503,13 @@
                     this.snackbar = true;
                 });
                 this.loadingAviableCards = true;
-                axios.get(`${this.$hostname}/api/subscribers/edit/cards/${this.$route.params.id}/`)
+                axios.get(`${this.$hostname}/api/resellers/filter-cards/`)
                     .then((response) => {
                         if (response.status === 200) {
                             this.aviableCards = response.data;
                             this.loadingAviableCards = false;
-                            console.log(response.data)
+                            this.min = 1;
+                            this.range = [this.min, this.aviableCards.length - 1]
                         }
                     }).catch((error) => {
                     this.text = "Connection error";
@@ -435,25 +550,48 @@
                 }
             },
             addCard(pk) {
-                axios.put(`${this.$hostname}/api/subscribers/edit/cards/${this.$route.params.id}/`, {card: pk})
+                axios.put(`${this.$hostname}/api/resellers/tie/${this.$route.params.id}/`, {card: pk})
                     .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data);
                             this.getData();
                         }
                     }).catch((error) => {
-                    if (error.response.status === 400) {
-                        this.text = "Balance too low";
-                        this.snackbar = true;
-                    } else {
-                        this.text = "Connection error";
-                        console.log(error)
-                        this.snackbar = true;
-                    }
+                    this.text = "Connection error";
+                    console.log(error)
+                    this.snackbar = true;
                 });
             },
+            applyManyCards() {
+                if (!this.$refs.formManyCards.validate()) {
+                    this.text = "Fill the form correctly";
+                    this.snackbar = true;
+                } else {
+                    this.loading = true;
+                    axios.put(`${this.$hostname}/api/resellers/tie/cards/${this.$route.params.id}/`, {start: this.range[0], stop: this.range[1]})
+                        .then((response) => {
+                            console.log(response.data)
+                            if (response.status === 200) {
+                                this.getData();
+                                this.text = `Cards from ${this.range[0]} to ${this.range[1]} were applied!`;
+                                this.snackbar = true;
+                                this.addManyCards = false;
+                            }
+                        }).catch((error) => {
+                        if (error.response.status === 400) {
+                            this.text = "Incorrect range";
+                            this.snackbar = true;
+                            this.dialog = false;
+                        }else{
+                            this.text = "Connection error";
+                            console.log(error)
+                            this.snackbar = true;
+                        }
+                    });
+                }
+            },
             removeCard(pk) {
-                axios.put(`${this.$hostname}/api/subscribers/delete/cards/${this.$route.params.id}/`, {card: pk})
+                axios.put(`${this.$hostname}/api/resellers/pickup/${this.$route.params.id}/`, {card: pk})
                     .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data);
@@ -466,11 +604,11 @@
                 });
             },
             deleteSubscriber() {
-                axios.delete(`${this.$hostname}/api/subscribers/delete/${this.$route.params.id}/`)
+                axios.delete(`${this.$hostname}/api/resellers/delete/${this.$route.params.id}/`)
                     .then((response) => {
-                        if (response.status === 200) {
+                        if (response.status === 204) {
                             console.log(response.data);
-                            this.$router.push('/subscribers')
+                            this.$router.push('/resellers')
                         }
                     }).catch((error) => {
                     this.text = "Connection error";
@@ -492,5 +630,7 @@
 </script>
 
 <style scoped>
-
+    /*.v-list__tile__sub-title {*/
+    /*overflow-x: auto;*/
+    /*}*/
 </style>

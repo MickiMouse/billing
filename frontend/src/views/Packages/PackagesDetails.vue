@@ -16,8 +16,9 @@
             </v-snackbar>
             <v-layout
                     justify-center
+                    wrap
             >
-                <v-flex md8>
+                <v-flex sm8 xs12>
                     <v-card
                             class="mx-auto"
                             :loading="loading"
@@ -143,7 +144,7 @@
                     </v-card>
                 </v-flex>
 
-                <v-flex md4>
+                <v-flex sm4 xs12>
                     <v-card class="mb-3">
                         <v-card-title>
                             <v-text-field
@@ -192,30 +193,7 @@
                         </v-data-table>
                     </v-card>
                    <v-card class="my-3">
-                       <v-card-actions>
-                            <v-subheader>Available bouquets </v-subheader>
-                           <v-form ref="form">
-                               <v-text-field
-                                       label="Bouquets"
-                                       class="mr-2 ml-5"
-                                       type="number"
-                                       :rules="[rules.counter, rules.number]"
-                                       v-model="numOfBouquets"
-                               ></v-text-field>
 
-
-                           </v-form>
-                           <v-btn
-                                   color="pink"
-                                   dark
-                                   small
-                                   ripple
-                                   icon
-                                   class="ml-auto"
-                           >
-                               <v-icon small>autorenew</v-icon>
-                           </v-btn>
-                        </v-card-actions>
 
 
                        <v-data-table
@@ -267,7 +245,6 @@
                 search: '',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
-                numOfBouquets: '',
                 details: {},
                 deletePackageDialog: false,
                 newBalance:'',

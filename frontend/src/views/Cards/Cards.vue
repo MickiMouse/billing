@@ -14,63 +14,154 @@
             </v-btn>
         </v-snackbar>
         <v-container fluid id="main-container" grid-list-md>
+            <v-dialog v-model="addManyCards" persistent max-width="290" v-if="this.$session.get('isSuperuser')">
+                <v-form ref="form">
+                    <v-card>
+                        <!--<v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>-->
+                        <v-card-text>
+                            <v-row>
+                                <v-col class="px-4">
+                                    <v-range-slider
+                                            v-model="range"
+                                            :max="max"
+                                            :min="min"
+                                            hide-details
+                                            class="align-center"
+                                    >
+                                        <template v-slot:prepend>
+                                            <v-text-field
+                                                    v-model="range[0]"
+                                                    :rules="[rules.counter, rules.number]"
+                                                    class="mt-0 pt-0"
+                                                    hide-details
+                                                    single-line
+                                                    type="number"
+                                                    style="width: 60px"
+                                            ></v-text-field>
+                                        </template>
+                                        <template v-slot:append>
+                                            <v-text-field
+                                                    v-model="range[1]"
+                                                    :rules="[rules.counter, rules.number]"
+                                                    class="mt-0 pt-0"
+                                                    hide-details
+                                                    single-line
+                                                    type="number"
+                                                    style="width: 60px"
+                                            ></v-text-field>
+                                        </template>
+                                    </v-range-slider>
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn outline small color="error" @click.stop="addManyCards = false">Close</v-btn>
+                            <v-btn small text color="primary" @click.stop="createManyCards">Add</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-form>
+            </v-dialog>
             <v-layout row wrap justify-center class="d-inline-block w-100">
-              <v-card>
-                  <v-card-title>
-                      Cards
-                      <v-spacer></v-spacer>
-                      <v-text-field
-                              v-model="search"
-                              append-icon="search"
-                              label="Search"
-                              single-line
-                              hide-details
-                      ></v-text-field>
-                  </v-card-title>
-                  <v-data-table
-                          :headers="headers"
-                          :items="cards"
-                          :items-per-page="5"
-                          class="elevation-1"
-                          :loading="loading"
-                          :search="search"
-                  >
-                      <template slot="items" slot-scope="props">
-                          <td class="text-xs-left">{{ props.item.pk }}</td>
-                          <td class="text-xs-left">{{ props.item.label }}</td>
-                          <td class="text-xs-left">{{ props.item.created_at }}</td>
-                          <td class="text-xs-left">{{ props.item.last_change }}</td>
-                          <td class="text-xs-left">{{ props.item.expired_date }}</td>
-                          <td class="text-xs-left">{{ props.item.status }}</td>
-                          <!--<td class="text-xs-left">{{ props.item.price }}</td>-->
-                          <td class="text-xs-left">
-                              <v-tooltip bottom>
-                                  <template v-slot:activator="{ on }">
-                                      <v-btn v-on="on" color="info" ripple icon small dark
-                                             :to="`/cards/${props.item.pk}/details/`" >
-                                          <v-icon small>info</v-icon>
-                                      </v-btn>
-                                  </template>
-                                  <span>Detail</span>
-                              </v-tooltip>
-                          </td>
-                      </template>
-                  </v-data-table>
-              </v-card>
+                <v-card>
+                    <v-card-title>
+                        Cards
+                        <v-spacer></v-spacer>
+                        <v-text-field
+                                v-model="search"
+                                append-icon="search"
+                                label="Search"
+                                single-line
+                                hide-details
+                        ></v-text-field>
+                    </v-card-title>
+                    <v-data-table
+                            :headers="headers"
+                            :items="cards"
+                            :items-per-page="5"
+                            class="elevation-1"
+                            :loading="loading"
+                            :search="search"
+                    >
+                        <template slot="items" slot-scope="props">
+                            <td class="text-xs-left">{{ props.item.pk }}</td>
+                            <td class="text-xs-left">{{ props.item.label }}</td>
+                            <td class="text-xs-left">{{ props.item.created_at }}</td>
+                            <td class="text-xs-left">{{ props.item.last_change }}</td>
+                            <td class="text-xs-left">{{ props.item.expired_date }}</td>
+                            <td class="text-xs-left">{{ props.item.status }}</td>
+                            <!--<td class="text-xs-left">{{ props.item.price }}</td>-->
+                            <td class="text-xs-left">
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on }">
+                                        <v-btn v-on="on" color="info" ripple icon small dark
+                                               :to="`/cards/${props.item.pk}/details/`">
+                                            <v-icon small>info</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Detail</span>
+                                </v-tooltip>
+                            </td>
+                        </template>
+                    </v-data-table>
+                </v-card>
             </v-layout>
-            <v-fab-transition v-if="this.$session.get('isSuperuser')">
+            <v-speed-dial
+                    v-model="fab"
+                    color="primary"
+                    dark
+                    fixed
+                    bottom
+                    right
+                    fab
+                    direction="top"
+                    :open-on-hover="hover"
+                    transition="slide-y-transition"
+                    v-if="this.$session.get('isSuperuser')"
+            >
+                <template v-slot:activator>
+                    <v-btn
+                            v-model="fab"
+                            color="primary"
+                            dark
+                            fab
+                    >
+                        <v-icon v-if="fab">close</v-icon>
+                        <v-icon v-else>library_add</v-icon>
+                    </v-btn>
+                </template>
                 <v-btn
-                        color="primary"
-                        dark
-                        fixed
-                        bottom
-                        right
                         fab
+                        dark
+                        small
+                        color="primary darken-1"
                         @click="createCard"
                 >
                     <v-icon>add</v-icon>
                 </v-btn>
-            </v-fab-transition>
+                <v-btn
+                        fab
+                        dark
+                        small
+                        color="primary darken-1"
+                        @click.stop="addManyCards = true"
+                >
+                    <v-icon>playlist_add</v-icon>
+                </v-btn>
+            </v-speed-dial>
+            <!--<v-fab-transition >-->
+            <!--<v-btn-->
+            <!--color="primary"-->
+            <!--dark-->
+            <!--fixed-->
+            <!--bottom-->
+            <!--right-->
+            <!--fab-->
+            <!--@click="createCard"-->
+            <!--&gt;-->
+            <!--<v-icon>add</v-icon>-->
+            <!--</v-btn>-->
+            <!--</v-fab-transition>-->
         </v-container>
     </v-content>
 
@@ -78,9 +169,10 @@
 
 <script>
     import axios from 'axios';
+
     export default {
         name: "Cards",
-        data () {
+        data() {
             return {
                 headers: [
                     {
@@ -88,23 +180,40 @@
                         align: 'left',
                         value: 'pk',
                     },
-                    { text: 'Card Label', value: 'label' },
-                    { text: 'Issued', value: 'created_at' },
-                    { text: 'Edited', value: 'last_change' },
-                    { text: 'Expired', value: 'expired_date' },
-                    { text: 'Status', value: 'status' },
+                    {text: 'Card Label', value: 'label'},
+                    {text: 'Issued', value: 'created_at'},
+                    {text: 'Edited', value: 'last_change'},
+                    {text: 'Expired', value: 'expired_date'},
+                    {text: 'Status', value: 'status'},
                     // { text: 'Price', value: 'price' },
-                    { text: 'Action', value: 'action', sortable:false },
+                    {text: 'Action', value: 'action', sortable: false},
                 ],
                 cards: [],
                 loading: true,
                 snackbar: false,
-                search:'',
+                search: '',
+                fab: false,
+                hover: true,
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
+                addManyCards: false,
+                min: 0,
+                range: [],
+                rules: {
+                    counter: value => (value <= 2147483647 && value >= 1) || 'Min 1 and Max 2147483647',
+                    number: value => {
+                        const pattern = /^\d+$/;
+                        return pattern.test(value) || 'Invalid number.'
+                    },
+                },
             }
         },
-        methods:{
+        computed: {
+            max() {
+                return this.min + 99;
+            },
+        },
+        methods: {
             getData() {
                 axios.get(`${this.$hostname}/api/cards/`)
                     .then((response) => {
@@ -118,8 +227,9 @@
                     console.log(error)
                     this.snackbar = true;
                 });
+                this.getRange();
             },
-            createCard(){
+            createCard() {
                 axios.post(`${this.$hostname}/api/cards/create/`)
                     .then((response) => {
                         console.log(response.data)
@@ -132,6 +242,45 @@
                     this.text = "Connection error";
                     this.snackbar = true;
                 });
+            },
+            createManyCards() {
+                if (!this.$refs.form.validate()) {
+                    this.text = "Fill the form correctly";
+                    this.snackbar = true;
+                } else {
+                    this.loading = true;
+                    axios.post(`${this.$hostname}/api/cards/create/range/`, {start: this.range[0], stop: this.range[1]})
+                        .then((response) => {
+                            console.log(response.data)
+                            if (response.status === 201) {
+                                this.getData();
+                                this.text = `Cards from ${this.range[0]} to ${this.range[1]} were created!`;
+                                this.snackbar = true;
+                                this.addManyCards = false;
+                            }
+                        }).catch((error) => {
+                        this.addManyCards = false;
+                        this.text = "Connection error";
+                        this.snackbar = true;
+                    });
+                }
+            },
+            getRange() {
+                this.loading = true;
+                axios.get(`${this.$hostname}/api/cards/create/range/`)
+                    .then((response) => {
+                        console.log(response.data)
+                        if (response.status === 200) {
+                            this.min = response.data.start;
+                            this.loading = false;
+                            this.range = [this.min, this.min + 10];
+                            this.rules.counter = value => (value <= (this.min + 99) && value >= this.min) || 'Min 1 and Max 2147483647';
+                        }
+                    }).catch((error) => {
+                    this.text = "Connection error";
+                    console.log(error)
+                    this.snackbar = true;
+                });
             }
         },
         beforeCreate() {
@@ -139,7 +288,7 @@
                 this.$router.push('/')
             }
         },
-        mounted(){
+        mounted() {
             this.getData();
         },
     }

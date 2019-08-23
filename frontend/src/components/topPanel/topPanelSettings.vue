@@ -1,5 +1,5 @@
 <template>
-    <div row justify-end v-if="this.$session.get('isSuperuser')">
+    <div row justify-end>
         <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
             <v-snackbar
                     v-model="snackbar"
@@ -82,8 +82,35 @@
                             </v-list-tile-content>
                         </v-list-tile>
                     </v-list>
-                </v-form>
 
+                </v-form>
+                <v-divider></v-divider>
+                <v-list three-line subheader>
+                    <v-subheader>Bouquets</v-subheader>
+                    <v-list-tile avatar>
+                        <v-list-tile-content  class="no-flex">
+                            <v-text-field
+                                    label="Bouquets"
+                                    type="number"
+                                    :rules="[rules.counter, rules.bouquetsCounter]"
+                                    v-model="numOfBouquets"
+                            ></v-text-field>
+                        </v-list-tile-content>
+                        <v-list-tile-avatar>
+                            <v-btn
+                                    color="pink"
+                                    dark
+                                    small
+                                    ripple
+                                    icon
+                                    class="mr-auto"
+                                    @click="updateBouquets"
+                            >
+                                <v-icon small>autorenew</v-icon>
+                            </v-btn>
+                        </v-list-tile-avatar>
+                    </v-list-tile>
+                </v-list>
             </v-card>
         </v-dialog>
     </div>
@@ -112,11 +139,13 @@
             rules: {
                 required: value => !!value || 'Required.',
                 counter: value => value <= 100 || 'Max 100',
+                bouquetsCounter: value => (value <= 128 && value >= 1) || 'Min 1 Max 128',
                 number: value => {
                     const pattern = /^\d+$/;
                     return pattern.test(value) || 'Invalid number.'
                 },
             },
+            numOfBouquets: 1,
         }),
         methods:{
             getData() {
@@ -161,7 +190,8 @@
                         this.dialog = false;
                     })
                 }
-            }
+            },
+            updateBouquets(){}
         },
         beforeMount(){
             axios.defaults.headers.common['Authorization'] = 'Token ' + this.$session.get('jwt');
@@ -171,5 +201,7 @@
 </script>
 
 <style scoped>
-
+    .no-flex{
+        flex: initial;
+    }
 </style>

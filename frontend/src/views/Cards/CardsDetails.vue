@@ -16,17 +16,33 @@
             </v-snackbar>
             <v-layout
                     justify-center
+                    wrap
             >
-                <v-flex md8>
+                <v-flex sm8 xs12>
                     <v-card
                             class="mx-auto"
                             :loading="loading"
                     >
                         <v-list two-line subheader dense>
                             <v-subheader>Details
-                                <!--<v-btn color="error" @click="deleteSubscriber" small icon ripple class="ml-auto mr-0">-->
-                                <!--<v-icon small>delete</v-icon>-->
-                                <!--</v-btn>-->
+                                <v-dialog v-model="deleteDialog" persistent max-width="290">
+                                    <template v-slot:activator="{ on }">
+                                        <v-btn color="error" v-on="on" small icon ripple class="ml-auto mr-0">
+                                            <v-icon small>delete</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <v-card>
+                                        <v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>
+                                        <v-card-text>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur
+                                            adipisicing elit. Quam, similique.
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn small color="error" @click="deleteDialog = false">Close</v-btn>
+                                            <v-btn outline small color="error" @click="deleteSubscriber">Delete</v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
                             </v-subheader>
                             <v-list-tile
                                     avatar
@@ -83,7 +99,9 @@
                                     <v-list-tile-title>Expired date</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.expired_date}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
-                                <div class="d-flex align-center justify-center" v-if="$store.getters.isPREPAYMENT">
+                                <div :class="{'d-none': $vuetify.breakpoint.xs, '': $vuetify.breakpoint.smAndUp}"
+                                     class="d-flex align-center justify-center"
+                                     v-if="$store.getters.isPREPAYMENT && details.status !== 'Inactive'">
                                     <v-form ref="form">
                                         <v-text-field
                                                 label="Periods"
@@ -108,7 +126,34 @@
                                     </v-btn>
                                 </div>
                             </v-list-tile>
+                            <v-list-tile avatar
+                                         :class="{'': $vuetify.breakpoint.xs, 'd-none': $vuetify.breakpoint.smAndUp}"
+                                         v-if="$store.getters.isPREPAYMENT && details.status !== 'Inactive'">
+                                <div class="d-flex align-center justify-center">
+                                    <v-form ref="form">
+                                        <v-text-field
+                                                label="Periods"
+                                                class="mr-2 ml-auto"
+                                                type="number"
+                                                :rules="[rules.counter, rules.number]"
+                                                v-model="numOfPeriods"
+                                        ></v-text-field>
 
+
+                                    </v-form>
+                                    <v-btn
+                                            color="pink"
+                                            dark
+                                            small
+                                            ripple
+                                            icon
+                                            class="ml-auto"
+                                            @click="updateCardPeriod"
+                                    >
+                                        <v-icon small>autorenew</v-icon>
+                                    </v-btn>
+                                </div>
+                            </v-list-tile>
                             <v-list-tile
                                     avatar
                                     @click=""
@@ -182,8 +227,34 @@
                             </v-list-tile>
                         </v-list>
                     </v-card>
+                    <v-card class="mt-3" v-if="$session.get('isSuperuser')">
+                        <v-card-title>
+                            <v-text-field
+                                    v-model="searchLogs"
+                                    append-icon="search"
+                                    label="Search"
+                                    single-line
+                                    hide-details
+                            ></v-text-field>
+                        </v-card-title>
+                    </v-card>
+                    <v-card class="my-3" v-if="$session.get('isSuperuser')">
+                        <v-subheader>Logs</v-subheader>
+                        <v-data-table
+                                :headers="headersLogs"
+                                :items="details.logs"
+                                items-per-page="5"
+                                class="elevation-1"
+                                :search="searchLogs"
+                        >
+                            <template slot="items" slot-scope="props">
+                                <td class="text-xs-left no-wrap">{{ props.item.date }}</td>
+                                <td class="text-xs-left no-wrap">{{ props.item.log }}</td>
+                            </template>
+                        </v-data-table>
+                    </v-card>
                 </v-flex>
-                <v-flex md4>
+                <v-flex xs12 sm4>
                     <v-card class="mb-3">
                         <v-card-title>
                             <v-text-field
@@ -207,6 +278,7 @@
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
+                                <td class="text-xs-left no-wrap">{{ props.item.tariff }}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -224,7 +296,16 @@
                                                 <v-icon small>close</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Remove</span>
+                                        <span>Remove now</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" color="error darken-1" @click="removeCardLater(props.item.pk)" ripple
+                                                   icon small dark>
+                                                <v-icon small>alarm_off</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Remove later</span>
                                     </v-tooltip>
                                 </td>
                             </template>
@@ -242,6 +323,7 @@
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
+                                <td class="text-xs-left no-wrap">{{ props.item.tariff }}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -259,7 +341,17 @@
                                                 <v-icon small>add</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Add</span>
+                                        <span>Add now</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn v-on="on" @click="addPackageLater(props.item.pk)"
+                                                   color="success darken-1" ripple
+                                                   icon small dark>
+                                                <v-icon small>add_alarm</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Add later</span>
                                     </v-tooltip>
                                 </td>
                             </template>
@@ -287,6 +379,7 @@
                 snackbar: false,
                 dialog: false,
                 search: '',
+                searchLogs:'',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 newBalance: '',
@@ -310,7 +403,24 @@
                         //  sortable: false,
                         value: 'header',
                     },
+                    {
+                        text: 'Tariff',
+                        align: 'left',
+                        //  sortable: false,
+                        value: 'tariff',
+                    },
                     {text: 'Action', value: 'action', sortable: false},
+                    // {text: 'Calories', value: 'calories'},
+                ],
+                headersLogs: [
+                    {text: 'Date', value: 'date'},
+                    {
+                        text: 'Header',
+                        align: 'left',
+                        //  sortable: false,
+                        value: 'log',
+                    },
+
                     // {text: 'Calories', value: 'calories'},
                 ],
                 packages: [],
@@ -322,6 +432,7 @@
                         return pattern.test(value) || 'Invalid number.'
                     },
                 },
+                deleteDialog: false,
             }
         },
         computed: {
@@ -404,9 +515,38 @@
                             this.getData();
                         }
                     }).catch((error) => {
-                    this.text = "Connection error";
-                    console.log(error)
-                    this.snackbar = true;
+                    if (error.response.status === 400) {
+                        this.details.status = !this.details.status;
+                        this.text = "The subscriber does not have enough funds";
+                        console.log(error)
+                        this.snackbar = true;
+                    } else {
+                        this.details.status = !this.details.status;
+                        this.text = "Connection error";
+                        console.log(error)
+                        this.snackbar = true;
+                    }
+                });
+            },
+            addPackageLater(pk) {
+                axios.post(`${this.$hostname}/api/cards/delayed-add/package/${this.$route.params.id}/`, {package: pk})
+                    .then((response) => {
+                        if (response.status === 200) {
+                            console.log(response.data);
+                            this.getData();
+                        }
+                    }).catch((error) => {
+                    if (error.response.status === 400) {
+                        this.details.status = !this.details.status;
+                        this.text = "The subscriber does not have enough funds";
+                        console.log(error)
+                        this.snackbar = true;
+                    } else {
+                        this.details.status = !this.details.status;
+                        this.text = "Connection error";
+                        console.log(error)
+                        this.snackbar = true;
+                    }
                 });
             },
             removeCard(pk) {
@@ -422,12 +562,39 @@
                     this.snackbar = true;
                 });
             },
-            deleteSubscriber() {
-                axios.delete(`${this.$hostname}/api/subscribers/delete/${this.$route.params.id}/`)
+            removeCardLater(pk) {
+                axios.post(`${this.$hostname}/api/cards/delayed-remove/package/${this.$route.params.id}/`, {package: pk})
                     .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data);
-                            this.$router.push('/subscribers')
+                            this.getData();
+                        }
+                    }).catch((error) => {
+                    this.text = "Connection error";
+                    console.log(error)
+                    this.snackbar = true;
+                });
+            },
+            // deleteSubscriber() {
+            //     axios.delete(`${this.$hostname}/api/cards/delete/${this.$route.params.id}/`)
+            //         .then((response) => {
+            //             if (response.status === 200) {
+            //                 console.log(response.data);
+            //                 this.$router.push('/subscribers')
+            //             }
+            //         }).catch((error) => {
+            //         this.text = "Connection error";
+            //         console.log(error)
+            //         this.snackbar = true;
+            //     });
+            // },
+            deleteSubscriber() {
+
+                axios.delete(`${this.$hostname}/api/cards/delete/${this.$route.params.id}/`)
+                    .then((response) => {
+                        if (response.status === 204) {
+                            console.log(response.data);
+                            this.$router.push('/cards')
                         }
                     }).catch((error) => {
                     this.text = "Connection error";

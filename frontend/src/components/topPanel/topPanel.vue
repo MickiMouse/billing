@@ -25,7 +25,7 @@
             <!--<v-toolbar-items>-->
                <!---->
             <!--</v-toolbar-items>-->
-            <top-panel-settings/>
+            <top-panel-settings v-if="$session.get('isSuperuser')"/>
             <v-btn text
                    flat
                    color="secondary"

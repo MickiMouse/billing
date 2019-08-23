@@ -72,6 +72,14 @@ const router = new Router({
             },
         },
         {
+            path: '/subscribers/:id/edit',
+            name: 'subscribers edit',
+            component: () => import('./views/Subscribers/SubscribersEdit.vue'),
+            meta: {
+                title: 'Subscribers',
+            },
+        },
+        {
             path: '/cards',
             name: 'cards',
             component: () => import('./views/Cards/Cards.vue'),
@@ -108,6 +116,22 @@ const router = new Router({
             name: 'resellers',
             component: () => import('./views/Resellers/Resellers.vue'),
             meta:{
+                title: 'Resellers',
+            },
+        },
+        {
+            path: '/resellers/:id/details',
+            name: 'resellers details',
+            component: () => import('./views/Resellers/ResellersDetails.vue'),
+            meta: {
+                title: 'Resellers',
+            },
+        },
+        {
+            path: '/resellers/:id/edit',
+            name: 'resellers edit',
+            component: () => import('./views/Resellers/ResellersEdit.vue'),
+            meta: {
                 title: 'Resellers',
             },
         },

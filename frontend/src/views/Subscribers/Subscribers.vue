@@ -53,14 +53,14 @@
                                    </template>
                                    <span>Detail</span>
                                </v-tooltip>
-                               <!--<v-tooltip bottom>-->
-                               <!--<template v-slot:activator="{ on }">-->
-                               <!--<v-btn v-on="on" color="primary" fab small dark>-->
-                               <!--<v-icon>edit</v-icon>-->
-                               <!--</v-btn>-->
-                               <!--</template>-->
-                               <!--<span>Edit</span>-->
-                               <!--</v-tooltip>-->
+                               <v-tooltip bottom>
+                                   <template v-slot:activator="{ on }">
+                                       <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/edit/`" color="success" icon ripple small dark>
+                                           <v-icon small>edit</v-icon>
+                                       </v-btn>
+                                   </template>
+                                   <span>Edit</span>
+                               </v-tooltip>
                            </td>
                        </template>
 
@@ -90,14 +90,14 @@
                                    </template>
                                    <span>Detail</span>
                                </v-tooltip>
-                               <!--<v-tooltip bottom>-->
-                               <!--<template v-slot:activator="{ on }">-->
-                               <!--<v-btn v-on="on" color="primary" fab small dark>-->
-                               <!--<v-icon>edit</v-icon>-->
-                               <!--</v-btn>-->
-                               <!--</template>-->
-                               <!--<span>Edit</span>-->
-                               <!--</v-tooltip>-->
+                               <v-tooltip bottom>
+                                   <template v-slot:activator="{ on }">
+                                       <v-btn v-on="on" :to="`/subscribers/${props.item.pk}/edit/`" color="success" icon ripple small dark>
+                                           <v-icon small>edit</v-icon>
+                                       </v-btn>
+                                   </template>
+                                   <span>Edit</span>
+                               </v-tooltip>
                            </td>
                        </template>
 
@@ -188,8 +188,6 @@
 
 <script>
     import axios from 'axios';
-
-    // const apiUrl = 'http://192.168.0.8:8000';
     export default {
         name: "Subscribers",
         data() {
