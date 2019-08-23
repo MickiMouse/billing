@@ -55,18 +55,56 @@ def pay_subscription_dispatcher(**kwargs):
 
 pay_subscription.connect(pay_subscription_dispatcher)
 
+# connect_package = Signal(providing_args=['card'])
+
+
+# def connect_package_dispatcher(**kwargs):
+#     card = kwargs['card']
+    # delayedAdd = DelayedAdditionPackage.objects.filter(card_id=card.pk)
+    # if delayedAdd.exists():
+    #     packages = set(card.packages.all())
+    #     packages.update(delayedAdd)
+    #     for pack in delayedAdd:
+    #         pack.delete()
+    #     card.packages.set(packages)
+    #     card.save()
+
+    # delayedRemove = DelayedRemovePackage.objects.filter(card_id=card.pk)
+    # if delayedRemove.exists():
+    #     packages = card.packages.all()
+    #     update_packages = packages.difference(delayedRemove)
+    #     print(update_packages)
+    #     new_packages = []
+    #
+    #     for pk in update_packages:
+    #         new_packages.append(Packet.objects.get(pk=pk))
+    #
+    #     card.packages.set(new_packages)
+    #     card.save()
+    #
+    #     for pack in delayedRemove:
+    #         pack.delete()
+
+
+# connect_package.connect(connect_package_dispatcher)
+
 
 class Reseller(AbstractUser):
     address = models.CharField(verbose_name='address', max_length=100, blank=True)
     telephone = models.CharField(verbose_name='telephone', max_length=30, blank=True)
     zone = models.CharField(verbose_name='zone', max_length=50, blank=True)
-    rrr = models.CharField(verbose_name='rrr', max_length=3, blank=True)
     balance = models.IntegerField(verbose_name='Balance', default=0)
     credit = models.IntegerField(verbose_name='Credit', default=0)
     price_card = models.IntegerField(verbose_name='Price', default=0)
     comment = models.CharField(verbose_name='Comment', max_length=100, blank=True)
     is_activated = models.BooleanField(verbose_name='Activated', default=True,
                                        db_index=True)
+
+    def rrr(self):
+        zeros = '000'
+        id = str(self.id)
+        length = len(id)
+        return zeros[:3-length] + id
 
     def __str__(self):
         return self.username or self.email
@@ -85,8 +123,7 @@ def get_admin():
 class Bouquet(models.Model):
     number = models.IntegerField(verbose_name='Number', db_index=True, unique=True)
     name = models.CharField(verbose_name='Bouquet', max_length=20, blank=True, null=True)
-    age_limit = models.IntegerField(verbose_name='Age limit',
-                                    blank=True, null=True)
+    age_limit = models.IntegerField(verbose_name='Age limit', blank=True, null=True)
     packages = models.ManyToManyField('Packet', blank=True, null=True,
                                       related_name='bouquets')
 
@@ -95,8 +132,8 @@ class Bouquet(models.Model):
 
 
 class Packet(models.Model):
-    header = models.CharField(verbose_name='header', max_length=50)
-    tariff = models.IntegerField(verbose_name='Tariff of one period', default=0)
+    header = models.CharField(verbose_name='header', max_length=50, blank=True, null=True)
+    tariff = models.IntegerField(verbose_name='Tariff of one period', default=0, blank=True, null=True)
     cards = models.ManyToManyField('Card', blank=True, null=True,
                                    related_name='packages')
 
@@ -123,7 +160,7 @@ class Card(models.Model):
         zero = '000000'
         length = len(str(self.pk))
         nnnnnn = zero[:6-length] + str(self.pk)
-        RRR = self.reseller.rrr
+        RRR = self.reseller.rrr()
         return '{}-{}-{}'.format(SSSSS, str(RRR), nnnnnn)
 
     def price(self):
@@ -143,9 +180,14 @@ class Card(models.Model):
             if self.expired_date > datetime.now():
                 return 'Active'
             else:
+                # connect_package.send(Card, card=self)
                 settings = Settings.objects.first()
                 if settings.kind_payment == 'VIRTUAL':
-                    pay_subscription.send(sender=Card, card=self, settings=settings)
+                    pay_subscription.send(
+                        sender=Card,
+                        card=self,
+                        settings=settings
+                    )
                 return 'Expired'
 
     def suspend_interval(self):
@@ -159,11 +201,11 @@ class Card(models.Model):
 
 
 class Subscriber(models.Model):
-    first_name = models.CharField(verbose_name='first_name', max_length=50, blank=True)
-    last_name = models.CharField(verbose_name='last_name', max_length=50, blank=True)
-    address = models.CharField(verbose_name='address', max_length=100, blank=True)
-    telephone = models.CharField(verbose_name='telephone', max_length=30, blank=True)
-    email = models.EmailField(verbose_name='email', blank=True)
+    first_name = models.CharField(verbose_name='first_name', max_length=50, blank=True, null=True)
+    last_name = models.CharField(verbose_name='last_name', max_length=50, blank=True, null=True)
+    address = models.CharField(verbose_name='address', max_length=100, blank=True, null=True)
+    telephone = models.CharField(verbose_name='telephone', max_length=30, blank=True, null=True)
+    email = models.EmailField(verbose_name='email', blank=True, null=True)
     balance = models.IntegerField(verbose_name='balance', default=0)
     reseller = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=get_admin)
 
@@ -205,3 +247,19 @@ class LogsReseller(Logs):
 
     class Meta(Logs.Meta):
         pass
+
+
+class DelayedAdditionPackage(models.Model):
+    card_id = models.IntegerField(verbose_name='Card')
+    package_id = models.IntegerField(verbose_name='Package')
+
+    def __str__(self):
+        return '%d %d' % (self.card_id, self.package_id)
+
+
+class DelayedRemovePackage(models.Model):
+    card_id = models.IntegerField(verbose_name='Card')
+    package_id = models.IntegerField(verbose_name='Package')
+
+    def __str__(self):
+        return '%d %d' % (self.card_id, self.package_id)

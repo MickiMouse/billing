@@ -41,3 +41,12 @@ class Command(BaseCommand):
                 pass
         d.logout()
         d.disconnect()
+
+
+class SendCards(BaseCommand):
+    help = 'Send cards to server'
+
+    def handle(self, *args, **options):
+        d = DVCrypt(SERVER_IP, SERVER_PORT)
+        d.connect()
+        d.login(SERVER_LOGIN, SERVER_PSWD)

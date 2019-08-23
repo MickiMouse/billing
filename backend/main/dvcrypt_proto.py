@@ -8,8 +8,7 @@ dvcrypt_command = {'login_getinfo': 0x10,       # Get salt from server
                    'totals_get': 0x40,          # Get subscribers or bouquet
                    'data_get': 0x41,            # Get bouquet detail
                    'subscriber_get': 0x33,      # Get subscriber info
-                   'subscriber_set': 0x34,      # Set subscriber info
-                   }
+                   'subscriber_set': 0x34}      # Set subscriber info
 
 
 class DVCryptError(Exception):
@@ -277,7 +276,7 @@ class DVCrypt(object):
             :type stop: int
             :param subscription: 16 bytes bit mask fo 128 bouquets 1-enable 0-disable one for all cards in range
             :type subscription: bytes
-            :param priority: Operation priority 'low' / 'hight'
+            :param priority: Operation priority 'low' / 'high'
             :type priority: str
             :return: None
             :raise UnknownData: If server return a zero message or data field is missing- raise exception

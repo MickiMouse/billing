@@ -9,6 +9,9 @@ from .models import (
     Bouquet,
     Settings,
     LogsCard,
+    LogsSubscriber,
+    LogsReseller,
+    DelayedAdditionPackage,
     user_registrated,
 )
 
@@ -90,11 +93,20 @@ class CardSerializer(serializers.ModelSerializer):
                   'last_change',
                   'expired_date',
                   'status',
-                  'label')
+                  'label',
+                  'price')
+
+
+class LogsResellerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogsReseller
+        fields = ('log',
+                  'date')
 
 
 class ResellerDetailSerializer(serializers.ModelSerializer):
     cards = CardSerializer(many=True)
+    logs = LogsResellerSerializer(many=True)
 
     class Meta:
         model = User
@@ -111,7 +123,22 @@ class ResellerDetailSerializer(serializers.ModelSerializer):
                   'price_card',
                   'is_activated',
                   'comment',
-                  'cards')
+                  'cards',
+                  'logs')
+
+
+class ResellerUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name',
+                  'last_name',
+                  'address',
+                  'telephone',
+                  'zone',
+                  'balance',
+                  'credit',
+                  'price_card',
+                  'comment')
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -204,6 +231,13 @@ class PackageEditSerializer(serializers.ModelSerializer):
         fields = ('tariff',)
 
 
+class LogsSubscriberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogsSubscriber
+        fields = ('log',
+                  'date')
+
+
 class SubscriberSerializer(serializers.ModelSerializer):
     """Serializer for Subscriber"""
     cards = CardShortDescriptionSerializer(many=True)
@@ -217,7 +251,7 @@ class SubscriberSerializer(serializers.ModelSerializer):
                   'email',
                   'balance',
                   'reseller',
-                  'cards')
+                  'cards',)
 
 
 class CardSuspendSubscribtionSerializer(serializers.ModelSerializer):
@@ -240,6 +274,7 @@ class SubscriberDetailSerializer(serializers.ModelSerializer):
     """Serializer for detail of subscriber"""
     cards = CardSerializer(many=True)
     reseller = ResellerShortDescriptionSerializer()
+    logs = LogsSubscriberSerializer(many=True)
 
     class Meta:
         model = Subscriber
@@ -251,7 +286,8 @@ class SubscriberDetailSerializer(serializers.ModelSerializer):
                   'email',
                   'balance',
                   'reseller',
-                  'cards')
+                  'cards',
+                  'logs')
 
 
 class SubscriberCreateSerializer(serializers.ModelSerializer):
@@ -368,3 +404,19 @@ class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settings
         fields = '__all__'
+
+
+class DelayedPackageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DelayedAdditionPackage
+        fields = ('card_id',
+                  'package_id')
+
+
+class ResellerTieOneCardSerializer(serializers.ModelSerializer):
+    cards = CardShortDescriptionSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ('cards',)
