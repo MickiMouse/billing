@@ -1,6 +1,7 @@
 import socket
-import datetime
+
 from Crypto.Hash import MD2
+import datetime
 
 dvcrypt_command = {'login_getinfo': 0x10,       # Get salt from server
                    'login_try': 0x11,           # Try login
@@ -8,7 +9,8 @@ dvcrypt_command = {'login_getinfo': 0x10,       # Get salt from server
                    'totals_get': 0x40,          # Get subscribers or bouquet
                    'data_get': 0x41,            # Get bouquet detail
                    'subscriber_get': 0x33,      # Get subscriber info
-                   'subscriber_set': 0x34}      # Set subscriber info
+                   'subscriber_set': 0x34,      # Set subscriber info
+                   }
 
 
 class DVCryptError(Exception):
@@ -32,8 +34,7 @@ class Unknown(DVCryptError):
         self.message = message
 
     def __str__(self):
-        str = self.message
-        return str
+        return self.message
 
 
 class UnknownData(DVCryptError):
@@ -243,8 +244,8 @@ class DVCrypt(object):
             :type start: int
             :param stop: stop card number included
             :type stop: int
-            :return: 16 bytes bit mask fo 128 bouquets 1-enable 0-disable
-            :rtype: dict[int,bytes]
+            :return: list of bouquets numbers
+            :rtype: dict[int,list]
             :raise UnknownData: If server return a zero message or data field is missing- raise exception
         """
         dword_start = self.__int_to_bytelist(start)
@@ -258,14 +259,23 @@ class DVCrypt(object):
         try:
             if result['data'] and len(result['data']) == (stop - start + 1)*16:
                 for i in range(0, stop - start + 1):
-                    ret[start+i] = result['data'][i*16:(i+1)*16]
+                    data = result['data'][i*16:(i+1)*16]
+                    subscription = int.from_bytes(data, byteorder='little')
+                    sublist = []
+                    id = 0
+                    while subscription != 0:
+                        if subscription & 0x01 == 1:
+                            sublist.append(id)
+                        subscription = subscription >> 1
+                        id += 1
+                    ret[start+i] = sublist
                 return ret
             else:
                 raise UnknownData('Unknown Error: ', result)
         except KeyError:
             raise UnknownData('Unknown Error. Data field is missing', result)
 
-    def subscriber_set(self, start, stop, subscription, priority='low'):
+    def subscriber_set(self, start, stop, bouquets, priority='low'):
         """
             Set subscribers data by card number. Batch write acceptable, recommended up to 50 per request
 
@@ -274,9 +284,9 @@ class DVCrypt(object):
             :type start: int
             :param stop: stop card number included
             :type stop: int
-            :param subscription: 16 bytes bit mask fo 128 bouquets 1-enable 0-disable one for all cards in range
-            :type subscription: bytes
-            :param priority: Operation priority 'low' / 'high'
+            :param bouquets: bouquets numbers
+            :type bouquets: set
+            :param priority: Operation priority 'low' / 'hight'
             :type priority: str
             :return: None
             :raise UnknownData: If server return a zero message or data field is missing- raise exception
@@ -290,6 +300,12 @@ class DVCrypt(object):
             data.append(0x00)
         else:
             data.append(0x01)
+
+        subscription = 0x00
+        for b in bouquets:
+            subscription = subscription | (1 << b)
+        subscription = int.to_bytes(subscription, 16, byteorder='little')
+
         data += list(subscription)
         result = self.send_command('subscriber_set', data=data)
         try:
@@ -297,6 +313,8 @@ class DVCrypt(object):
                 raise UnknownData('Unknown Error: ', result)
         except KeyError:
             raise UnknownData('Unknown Error. Data field is missing', result)
+        print(result)
+        return result
 
     def get_subscribers_count(self):
         """
@@ -388,3 +406,4 @@ class DVCrypt(object):
                 raise UnknownData('Unknown Error :', result)
         except KeyError:
             raise UnknownData('Unknown Error. Data field is missing', result)
+

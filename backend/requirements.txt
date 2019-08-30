@@ -1,7 +1,10 @@
 certifi==2019.6.16
 chardet==3.0.4
+crypto==1.4.1
 Django==2.2.3
+django-compat==1.0.15
 django-cors-headers==3.0.2
+django-crontab==0.7.1
 django-templated-mail==1.1.1
 djangorestframework==3.10.2
 djangorestframework-jsonapi==2.8.0

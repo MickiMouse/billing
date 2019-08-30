@@ -6,10 +6,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.signals import Signal
 
 from backend.settings import SSSSS
-from .utilities import (
-    send_activation_notification,
-    send_request_reset_password,
-)
 
 user_registrated = Signal(providing_args=['instance'])
 
@@ -33,60 +29,19 @@ pay_subscription = Signal(providing_args=['card', 'settings'])
 
 
 def pay_subscription_dispatcher(**kwargs):
-    card = kwargs['card']
-    settings = kwargs['settings']
-    subscriber = card.subscriber
-    if subscriber is None:
-        return 'Inactive'
-    diff = subscriber.balance - card.price()
-    if diff < 0:
-        return 'Expired'
-    subscriber.balance -= card.price()
-    period = settings.quantity
-    if settings.kind_period == 'MONTHS':
-        card.expired_date = datetime.now() + relativedelta(months=period)
-    elif settings.kind_period == 'WEEKS':
-        card.expired_date = datetime.now() + relativedelta(weeks=period)
-    else:
-        card.expired_date = datetime.now() + relativedelta(minutes=period)
-    subscriber.save(update_fields=['balance'])
-    card.save(update_fields=['expired_date'])
+    continue_subscription(card=kwargs['card'], settings=kwargs['settings'])
 
 
 pay_subscription.connect(pay_subscription_dispatcher)
 
-# connect_package = Signal(providing_args=['card'])
+connect_package = Signal(providing_args=['card'])
 
 
-# def connect_package_dispatcher(**kwargs):
-#     card = kwargs['card']
-    # delayedAdd = DelayedAdditionPackage.objects.filter(card_id=card.pk)
-    # if delayedAdd.exists():
-    #     packages = set(card.packages.all())
-    #     packages.update(delayedAdd)
-    #     for pack in delayedAdd:
-    #         pack.delete()
-    #     card.packages.set(packages)
-    #     card.save()
-
-    # delayedRemove = DelayedRemovePackage.objects.filter(card_id=card.pk)
-    # if delayedRemove.exists():
-    #     packages = card.packages.all()
-    #     update_packages = packages.difference(delayedRemove)
-    #     print(update_packages)
-    #     new_packages = []
-    #
-    #     for pk in update_packages:
-    #         new_packages.append(Packet.objects.get(pk=pk))
-    #
-    #     card.packages.set(new_packages)
-    #     card.save()
-    #
-    #     for pack in delayedRemove:
-    #         pack.delete()
+def connect_package_dispatcher(**kwargs):
+    delayed_connect_package(card=kwargs['card'])
 
 
-# connect_package.connect(connect_package_dispatcher)
+connect_package.connect(connect_package_dispatcher)
 
 
 class Reseller(AbstractUser):
@@ -99,15 +54,15 @@ class Reseller(AbstractUser):
     comment = models.CharField(verbose_name='Comment', max_length=100, blank=True)
     is_activated = models.BooleanField(verbose_name='Activated', default=True,
                                        db_index=True)
-
-    def rrr(self):
-        zeros = '000'
-        id = str(self.id)
-        length = len(id)
-        return zeros[:3-length] + id
+    rrr = models.CharField(verbose_name='Prefix', max_length=3, blank=True)
 
     def __str__(self):
         return self.username or self.email
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.rrr = '000'
+        super().save(*args, **kwargs)
 
     class Meta(AbstractUser.Meta):
         pass
@@ -160,7 +115,7 @@ class Card(models.Model):
         zero = '000000'
         length = len(str(self.pk))
         nnnnnn = zero[:6-length] + str(self.pk)
-        RRR = self.reseller.rrr()
+        RRR = self.reseller.rrr
         return '{}-{}-{}'.format(SSSSS, str(RRR), nnnnnn)
 
     def price(self):
@@ -169,7 +124,7 @@ class Card(models.Model):
                 price=models.Sum('tariff'))['price']
         else:
             pricePackages = 0
-        return pricePackages
+        return pricePackages + self.reseller.price_card
 
     def status(self):
         if self.expired_date is None:
@@ -180,14 +135,6 @@ class Card(models.Model):
             if self.expired_date > datetime.now():
                 return 'Active'
             else:
-                # connect_package.send(Card, card=self)
-                settings = Settings.objects.first()
-                if settings.kind_payment == 'VIRTUAL':
-                    pay_subscription.send(
-                        sender=Card,
-                        card=self,
-                        settings=settings
-                    )
                 return 'Expired'
 
     def suspend_interval(self):
@@ -199,6 +146,9 @@ class Card(models.Model):
     def __str__(self):
         return '%s %d' % (self.label(), self.pk)
 
+    class Meta:
+        ordering = ['created_at']
+
 
 class Subscriber(models.Model):
     first_name = models.CharField(verbose_name='first_name', max_length=50, blank=True, null=True)
@@ -208,9 +158,13 @@ class Subscriber(models.Model):
     email = models.EmailField(verbose_name='email', blank=True, null=True)
     balance = models.IntegerField(verbose_name='balance', default=0)
     reseller = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=get_admin)
+    created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
+
+    class Meta:
+        ordering = ['created_at']
 
 
 class Settings(models.Model):
@@ -226,24 +180,28 @@ class Logs(models.Model):
     class Meta:
         abstract = True
         ordering = ['date']
+        get_latest_by = ['date']
 
 
 class LogsCard(Logs):
-    card = models.ForeignKey(Card, on_delete=models.PROTECT, related_name='logs')
+    card = models.ForeignKey(Card, on_delete=models.PROTECT, related_name='logs',
+                             null=True, blank=True)
 
     class Meta(Logs.Meta):
         pass
 
 
 class LogsSubscriber(Logs):
-    subscriber = models.ForeignKey(Subscriber, on_delete=models.PROTECT, related_name='logs')
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.PROTECT, related_name='logs',
+                                   null=True, blank=True)
 
     class Meta(Logs.Meta):
         pass
 
 
 class LogsReseller(Logs):
-    reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='logs')
+    reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='logs',
+                                 null=True, blank=True)
 
     class Meta(Logs.Meta):
         pass
@@ -263,3 +221,40 @@ class DelayedRemovePackage(models.Model):
 
     def __str__(self):
         return '%d %d' % (self.card_id, self.package_id)
+
+
+class ReportSubscription(models.Model):
+    subscription = models.IntegerField(verbose_name='Count sub', db_index=True, default=0)
+    created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
+    reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='reports')
+
+    class Meta:
+        ordering = ['created_at']
+        get_latest_by = ['created_at']
+
+
+class ReportFinance(models.Model):
+    package_price = models.IntegerField(verbose_name='Package price', db_index=True, null=True)
+    subscription = models.IntegerField(verbose_name='Continue sub', db_index=True, null=True)
+    price_card = models.IntegerField(verbose_name='Price card', db_index=True, null=True)
+    created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
+    reseller = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    class Meta:
+        ordering = ['created_at']
+        get_latest_by = ['created_at']
+
+
+class SynchronizeForms(models.Model):
+    date = models.DateTimeField(verbose_name='Time to synchronize', null=True)
+    status = models.BooleanField(verbose_name='Completed?', default=False)
+
+    class Meta:
+        ordering = ['date']
+
+
+from .utilities import (
+    send_activation_notification,
+    send_request_reset_password,
+    continue_subscription,
+    delayed_connect_package,)

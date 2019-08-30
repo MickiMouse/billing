@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     DownloadBouquets,
+    SendCardsView,
     TokenCreateView,
     TokenDestroyView,
     ResellerListView,
@@ -48,6 +49,11 @@ from .views import (
     PickUpCardsFromReseller,
     ResellerTieOneCard,
     ResellerPickUpOneCard,
+    Reports,
+    MakeAdmin,
+    ChangeSelfPermission,
+    SynchronizeView,
+    Dashboard,
 )
 
 app_name = 'main'
@@ -99,9 +105,15 @@ urlpatterns = [
          ResetPasswordView.as_view(),
          name='update_password'),
     path('download/<int:count>/', DownloadBouquets.as_view()),
+    path('send/', SendCardsView.as_view()),
     path('bouquets/<int:pk>/', BouquetsFilterListView.as_view()),
     path('settings/', SettingsView.as_view()),
     path('change-settings/', ChangeSettingsView.as_view()),
     path('subscribtion/enable/<int:pk>/', EnableSuspendSubscriptionView.as_view()),
     path('subscribtion/disable/<int:pk>/', DisableSuspendSubscriptionView.as_view()),
+    path('reports/', Reports.as_view()),
+    path('change-permission/<int:pk>/', MakeAdmin.as_view()),
+    path('is-permission-editable/<int:pk>/', ChangeSelfPermission.as_view()),
+    path('synchronize/', SynchronizeView.as_view()),
+    path('dashboard/', Dashboard.as_view()),
 ]

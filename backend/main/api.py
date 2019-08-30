@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from backend.settings import (
     SERVER_IP,
     SERVER_PORT,
@@ -6,7 +7,7 @@ from backend.settings import (
     SERVER_PSWD,
 )
 
-from .models import Bouquet
+from .models import Bouquet, Card
 from .dvcrypt_proto import DVCrypt
 
 
@@ -29,9 +30,6 @@ class Command(BaseCommand):
                 obj.name = detail[i]['name']
                 obj.age_limit = detail[i]['parental']
                 obj.save()
-                print(obj.name)
-                print(obj.age_limit)
-                print('SAVED')
         for i in range(bouquets, max_bouquets):
             try:
                 obj = Bouquet.objects.get(number=i)
@@ -50,3 +48,14 @@ class SendCards(BaseCommand):
         d = DVCrypt(SERVER_IP, SERVER_PORT)
         d.connect()
         d.login(SERVER_LOGIN, SERVER_PSWD)
+        bouquets = set()
+        start = options['start']
+        stop = options['stop']
+        for card in Card.objects.filter(Q(pk__gt=start) & Q(pk__lt=stop)):
+            for package in card.packages.all():
+                for b in package.bouquets.all():
+                    bouquets.add(b.number)
+            d.subscriber_set(card.pk, card.pk, bouquets, 'low')
+            bouquets.clear()
+        d.logout()
+        d.disconnect()

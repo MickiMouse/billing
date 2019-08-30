@@ -12,6 +12,7 @@ from .models import (
     LogsSubscriber,
     LogsReseller,
     DelayedAdditionPackage,
+    SynchronizeForms,
     user_registrated,
 )
 
@@ -124,7 +125,8 @@ class ResellerDetailSerializer(serializers.ModelSerializer):
                   'is_activated',
                   'comment',
                   'cards',
-                  'logs')
+                  'logs',
+                  'is_superuser')
 
 
 class ResellerUpdateSerializer(serializers.ModelSerializer):
@@ -135,10 +137,12 @@ class ResellerUpdateSerializer(serializers.ModelSerializer):
                   'address',
                   'telephone',
                   'zone',
+                  'rrr',
                   'balance',
                   'credit',
                   'price_card',
-                  'comment')
+                  'comment',
+                  'is_superuser')
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -420,3 +424,22 @@ class ResellerTieOneCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('cards',)
+
+
+class ResellerMakeAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('is_superuser',)
+
+    def update(self, instance, validated_data):
+        instance.is_superuser = validated_data['is_superuser']
+        instance.is_staff = validated_data['is_superuser']
+        instance.save()
+        return instance
+
+
+class SynchrFormsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SynchronizeForms
+        fields = ('date',
+                  'status')

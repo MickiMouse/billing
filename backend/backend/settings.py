@@ -11,6 +11,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'django_crontab',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -21,7 +22,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework',
     'corsheaders',
-    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +136,7 @@ SERVER_PORT = 8100
 SERVER_LOGIN = 'admin'
 
 SERVER_PSWD = ''
+
+CRONJOBS = [
+    ('*/1 * * * *', 'main.cron.my_scheduled_job'),
+]
