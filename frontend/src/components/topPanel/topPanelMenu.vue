@@ -30,6 +30,7 @@
 </template>
 
 <script>
+    import axios from 'axios';
     export default {
         name: "topPanelMenu",
         props:{
@@ -69,6 +70,16 @@
                     {title: 'Packages', icon: 'archive', route: '/packages'},
                 ]
             }
+            axios.interceptors.response.use((response) => { // intercept the global error
+                return response
+            },  (error)=> {
+                if (error.response.status == 401) { // if the error is 401 and hasent already been retried
+                    this.$session.destroy();
+                    this.$router.push('/');
+                    axios.defaults.headers.common['Authorization'] = '';
+                }
+                return Promise.reject(error)
+            })
         }
     }
 </script>
