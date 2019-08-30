@@ -88,17 +88,19 @@
                 <v-list three-line subheader>
                     <v-subheader>Bouquets</v-subheader>
                     <v-list-tile avatar>
-                        <v-list-tile-content  class="no-flex">
-                            <v-text-field
-                                    label="Bouquets"
-                                    type="number"
-                                    :rules="[rules.counter, rules.bouquetsCounter]"
-                                    v-model="numOfBouquets"
-                            ></v-text-field>
+                        <v-list-tile-content class="no-flex">
+                            <v-form ref="formBouquets">
+                                <v-text-field
+                                        label="Bouquets"
+                                        type="number"
+                                        :rules="[rules.bouquetsCounter]"
+                                        v-model="numOfBouquets"
+                                ></v-text-field>
+                            </v-form>
                         </v-list-tile-content>
                         <v-list-tile-avatar>
                             <v-btn
-                                    color="pink"
+                                    color="warning"
                                     dark
                                     small
                                     ripple
@@ -111,6 +113,62 @@
                         </v-list-tile-avatar>
                     </v-list-tile>
                 </v-list>
+                <v-list three-line subheader>
+                    <v-subheader>Synchronization</v-subheader>
+                    <v-list-tile avatar>
+                        <v-list-tile-content class="no-flex">
+                            <v-form ref="formBouquets">
+                                <v-text-field
+                                        label="Periods quantity"
+                                        type="number"
+                                        :rules="[rules.counterUpdatePeriods]"
+                                        v-model="counterUpdatePeriods"
+                                        @input="log"
+                                ></v-text-field>
+                            </v-form>
+                        </v-list-tile-content>
+                    </v-list-tile>
+                </v-list>
+                <v-form class="w-100 px-3" ref="formPeriods" @submit.prevent="synchronize()">
+                    <v-layout
+                            wrap
+                    >
+                        <v-flex sm3 pr-3 v-for="(period,key) in counterUpdatePeriodsArray" :key="key">
+                            <v-menu
+                                    :id="'menu'+key"
+                                    v-model="updatePeriodsArray[key].isOpen"
+                                    :close-on-content-click="false"
+                                    :nudge-right="40"
+                                    :return-value.sync="updatePeriodsArray[key].value"
+                                    transition="scale-transition"
+                                    offset-y
+                                    full-width
+                                    max-width="290px"
+                                    min-width="290px"
+                            >
+                                <template v-slot:activator="{ on }">
+                                    <v-text-field
+                                            v-model="updatePeriodsArrayHack[key].value"
+                                            :label="'Period ' + (key+1)"
+                                            prepend-icon="access_time"
+                                            readonly
+                                            v-on="on"
+                                    ></v-text-field>
+                                </template>
+                                <v-time-picker
+                                        format="24hr"
+                                        v-if="updatePeriodsArray[key].isOpen"
+                                        v-model="updatePeriodsArray[key].value"
+                                        full-width
+                                        @click:minute="updatePeriodsArrayHack[key].value = updatePeriodsArray[key].value"
+                                ></v-time-picker>
+                            </v-menu>
+                        </v-flex>
+                        <v-flex xs5 sm1 pr-3 class="d-flex align-center">
+                            <v-btn type="submit" small color="primary">Save</v-btn>
+                        </v-flex>
+                    </v-layout>
+                </v-form>
             </v-card>
         </v-dialog>
     </div>
@@ -118,10 +176,11 @@
 
 <script>
     import axios from 'axios';
+
     export default {
         data: () => ({
             dialog: false,
-            snackbar:false,
+            snackbar: false,
             text: 'Oops... Something went wrong',
             timeout: 5000,
             loading: true,
@@ -133,12 +192,16 @@
                 'text': 'Months',
                 'value': 'MONTHS'
             }],
-            kind_payment:'',
-            kind_period:'',
+            updatePeriodsArray:[{},{},{},{},{},{},{},{}],
+            updatePeriodsArrayHack:[{},{},{},{},{},{},{},{}],
+            counterUpdatePeriods: 1,
+            kind_payment: '',
+            kind_period: '',
             numberOfPeriod: 1,
             rules: {
                 required: value => !!value || 'Required.',
                 counter: value => value <= 100 || 'Max 100',
+                counterUpdatePeriods: value => (value <= 8 && value >= 1) || 'Min 1 Max 8',
                 bouquetsCounter: value => (value <= 128 && value >= 1) || 'Min 1 Max 128',
                 number: value => {
                     const pattern = /^\d+$/;
@@ -147,7 +210,23 @@
             },
             numOfBouquets: 1,
         }),
-        methods:{
+        computed: {
+            counterUpdatePeriodsArray() {
+                if (this.counterUpdatePeriods < 1) {
+                    return new Array(1)
+                } else if (this.counterUpdatePeriods > 8) {
+                    return new Array(8)
+                } else {
+                    return new Array(Number.parseInt(this.counterUpdatePeriods))
+                }
+
+
+            }
+        },
+        methods: {
+            log() {
+                console.log(this.counterUpdatePeriods, this.counterUpdatePeriodsArray)
+            },
             getData() {
                 // this.loadingSettings = true;
                 this.loading = true;
@@ -159,7 +238,10 @@
                             this.numberOfPeriod = response.data.quantity;
                             console.log(response.data)
                             this.loading = false;
-                            this.$store.commit('set',{type: 'isPREPAYMENT', items: this.kind_payment === 'PREPAYMENT'});
+                            this.$store.commit('set', {
+                                type: 'isPREPAYMENT',
+                                items: this.kind_payment === 'PREPAYMENT'
+                            });
                         }
                     }).catch((error) => {
                     this.text = "Connection error";
@@ -167,13 +249,17 @@
                     this.snackbar = true;
                 });
             },
-            saveSettings(){
+            saveSettings() {
                 if (!this.$refs.form.validate()) {
                     this.text = "Fill the form correctly";
                     this.snackbar = true;
-                }else{
+                } else {
                     this.loading = true;
-                    axios.put(`${this.$hostname}/api/change-settings/`, {kind_payment: this.kind_payment,kind_period: this.kind_period, quantity: this.numberOfPeriod})
+                    axios.put(`${this.$hostname}/api/change-settings/`, {
+                        kind_payment: this.kind_payment,
+                        kind_period: this.kind_period,
+                        quantity: this.numberOfPeriod
+                    })
                         .then((response) => {
                             if (response.status === 200) {
                                 this.getData();
@@ -191,9 +277,50 @@
                     })
                 }
             },
-            updateBouquets(){}
+            updateBouquets() {
+                if (!this.$refs.formBouquets.validate()) {
+                    this.text = "Fill the number of bouquets correctly";
+                    this.snackbar = true;
+                } else {
+                    axios.get(`${this.$hostname}/api/download/${this.numOfBouquets}/`)
+                        .then((response) => {
+                            if (response.status === 200) {
+                                this.getData();
+                                this.text = "Bouquets updated!";
+                                this.snackbar = true;
+                                this.dialog = false;
+                                this.$router.push('/dashboard');
+                            }
+                        }).catch((error) => {
+                        this.text = "Connection error";
+                        console.log(error)
+                        this.snackbar = true;
+                    })
+                }
+            },
+            synchronize(){
+                if (!this.$refs.formPeriods.validate()) {
+                    this.text = "Fill the periods correctly";
+                    this.snackbar = true;
+                } else {
+                    axios.post(`${this.$hostname}/api/synchronize/`,{periods:this.updatePeriodsArrayHack})
+                        .then((response) => {
+                            if (response.status === 200) {
+                                this.getData();
+                                this.text = "Periods updated!";
+                                this.snackbar = true;
+                                this.dialog = false;
+                                this.$router.push('/dashboard');
+                            }
+                        }).catch((error) => {
+                        this.text = "Connection error";
+                        console.log(error)
+                        this.snackbar = true;
+                    })
+                }
+            }
         },
-        beforeMount(){
+        beforeMount() {
             axios.defaults.headers.common['Authorization'] = 'Token ' + this.$session.get('jwt');
             this.getData();
         }
@@ -201,7 +328,7 @@
 </script>
 
 <style scoped>
-    .no-flex{
+    .no-flex {
         flex: initial;
     }
 </style>

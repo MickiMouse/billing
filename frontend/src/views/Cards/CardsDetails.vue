@@ -25,7 +25,7 @@
                     >
                         <v-list two-line subheader dense>
                             <v-subheader>Details
-                                <v-dialog v-model="deleteDialog" persistent max-width="290">
+                                <v-dialog v-if="this.details.status !== 'Active'" v-model="deleteDialog" persistent max-width="290">
                                     <template v-slot:activator="{ on }">
                                         <v-btn color="error" v-on="on" small icon ripple class="ml-auto mr-0">
                                             <v-icon small>delete</v-icon>

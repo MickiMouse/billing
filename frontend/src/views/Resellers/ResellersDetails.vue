@@ -122,12 +122,33 @@
                             <v-list-tile
                                     avatar
                                     @click=""
+                                    v-if="$session.get('isSuperuser')"
+                            >
+                                <v-list-tile-avatar>
+                                    <v-icon class="grey lighten-1 white--text">person</v-icon>
+                                </v-list-tile-avatar>
+                                <v-list-tile-content>
+                                    <v-list-tile-title>Permissions</v-list-tile-title>
+                                    <p class="mb-0">{{permissions}}
+                                    </p>
+                                </v-list-tile-content>
+                                <v-list-tile-avatar>
+                                    <v-switch
+                                            v-model="details.is_superuser"
+                                            @change="updatePermissions"
+                                            :disabled="!is_permission_edit"
+                                    ></v-switch>
+                                </v-list-tile-avatar>
+                            </v-list-tile>
+                            <v-list-tile
+                                    avatar
+                                    @click=""
                             >
                                 <v-list-tile-avatar>
                                     <v-icon class="grey lighten-1 white--text">branding_watermark</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>RRR</v-list-tile-title>
+                                    <v-list-tile-title>Cards prefix</v-list-tile-title>
                                     <p class="mb-0">{{details.rrr}}
                                     </p>
                                 </v-list-tile-content>
@@ -342,7 +363,7 @@
                                         </template>
                                         <span>Detail</span>
                                     </v-tooltip>
-                                    <v-tooltip bottom>
+                                    <v-tooltip bottom v-if="props.item.status !== 'Active'">
                                         <template v-slot:activator="{ on }">
                                             <v-btn v-on="on" color="error" @click="removeCard(props.item.pk)" ripple
                                                    icon
@@ -356,7 +377,7 @@
                             </template>
                         </v-data-table>
                     </v-card>
-                    <v-card class="my-3">
+                    <v-card class="my-3" v-if="is_permission_edit">
                         <v-subheader>Available cards</v-subheader>
                         <v-data-table
                                 :headers="headers"
@@ -433,11 +454,13 @@
                 timeout: 5000,
                 newBalance: '',
                 addManyCards: false,
+                is_permission_edit: false,
                 details: {
                     address: "",
                     balance: 0,
                     cards: Array(0),
                     email: '',
+                    is_permission_edit: false
                 },
 
                 headers: [
@@ -483,33 +506,39 @@
             max() {
                 return this.min + 99;
             },
+            permissions(){
+                return this.details.is_superuser ? 'Admin' : "Reseller"
+            }
         },
         methods: {
             getData() {
                 this.loadingCards = true;
+                this.loadingAviableCards = true;
                 axios.get(`${this.$hostname}/api/resellers/${this.$route.params.id}/`)
                     .then((response) => {
                         if (response.status === 200) {
                             console.log(response.data)
                             this.details = response.data;
                             this.cards = this.details.cards;
-                            this.newBalance = this.details.balance;
-                            this.loadingCards = false;
-                            this.details.is_activated = this.details.is_activated ? 'Active' : 'Inactive';
-                        }
-                    }).catch((error) => {
-                    this.text = "Connection error";
-                    console.log(error)
-                    this.snackbar = true;
-                });
-                this.loadingAviableCards = true;
-                axios.get(`${this.$hostname}/api/resellers/filter-cards/`)
-                    .then((response) => {
-                        if (response.status === 200) {
-                            this.aviableCards = response.data;
+                            this.aviableCards = this.details.available_cards;
                             this.loadingAviableCards = false;
                             this.min = 1;
-                            this.range = [this.min, this.aviableCards.length - 1]
+                            this.range = [this.min, this.aviableCards.length - 1];
+                            this.newBalance = this.details.balance;
+                            this.loadingCards = false;
+                            this.loadingAviableCards = false;
+                            this.details.is_activated = this.details.is_activated ? 'Active' : 'Inactive';
+                            axios.get(`${this.$hostname}/api/is-permission-editable/${this.$route.params.id}/`)
+                                .then((response) => {
+                                    if (response.status === 200) {
+                                        console.log(response.data.permission)
+                                        this.is_permission_edit = response.data.permission;
+                                    }
+                                }).catch((error) => {
+                                this.text = "Connection error";
+                                console.log(error)
+                                this.snackbar = true;
+                            });
                         }
                     }).catch((error) => {
                     this.text = "Connection error";
@@ -614,6 +643,20 @@
                     this.text = "Connection error";
                     console.log(error)
                     this.snackbar = true;
+                });
+            },
+            updatePermissions(){
+                axios.put(`${this.$hostname}/api/change-permission/${this.$route.params.id}/`,{is_superuser: this.details.is_superuser})
+                    .then((response) => {
+                        if (response.status === 200) {
+                            this.text = "Permissions changed!";
+                            this.snackbar = true;
+                            this.details.is_superuser = response.data.is_superuser;
+                        }
+                    }).catch((error) => {
+                    this.text = "Connection error";
+                    this.snackbar = true;
+                    this.details.is_superuser = !this.details.is_superuser;
                 });
             }
         },

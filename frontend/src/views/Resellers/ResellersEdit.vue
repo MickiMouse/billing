@@ -34,11 +34,14 @@
                                         </template>
                                         <v-card>
                                             <v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>
-                                            <v-card-text>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quam, similique.</v-card-text>
+                                            <v-card-text>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,
+                                                consectetur adipisicing elit. Quam, similique.
+                                            </v-card-text>
                                             <v-card-actions>
                                                 <v-spacer></v-spacer>
                                                 <v-btn small color="error" @click="deleteDialog = false">Close</v-btn>
-                                                <v-btn outline small color="error" @click="deleteSubscriber">Delete</v-btn>
+                                                <v-btn outline small color="error" @click="deleteSubscriber">Delete
+                                                </v-btn>
                                             </v-card-actions>
                                         </v-card>
                                     </v-dialog>
@@ -65,9 +68,11 @@
                                         <v-icon class="grey lighten-1 white--text">branding_watermark</v-icon>
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
-                                        <v-list-tile-title>RRR</v-list-tile-title>
-                                        <p class="mb-0">{{details.rrr}}
-                                        </p>
+                                        <v-text-field
+                                                label="Cards prefix"
+                                                type="number"
+                                                :rules="[rules.rrrCounter,rules.number,rules.required,rules.checkAdminZeros]"
+                                                v-model="details.rrr"></v-text-field>
                                     </v-list-tile-content>
                                 </v-list-tile>
                                 <v-list-tile
@@ -153,21 +158,6 @@
                                                 v-model="details.price_card"></v-text-field>
                                     </v-list-tile-content>
                                 </v-list-tile>
-                                <!--<v-list-tile-->
-                                        <!--avatar-->
-                                        <!--@click=""-->
-                                <!--&gt;-->
-                                    <!--<v-list-tile-avatar>-->
-                                        <!--<v-icon class="grey lighten-1 white&#45;&#45;text">mail</v-icon>-->
-                                    <!--</v-list-tile-avatar>-->
-                                    <!--<v-list-tile-content>-->
-                                        <!--<v-text-field label="Email"-->
-                                                      <!--v-model="details.email"-->
-                                                      <!--type="email"-->
-                                                      <!--:rules="[rules.email,rules.required]"-->
-                                        <!--&gt;</v-text-field>-->
-                                    <!--</v-list-tile-content>-->
-                                <!--</v-list-tile>-->
                                 <v-list-tile
                                         avatar
                                         @click=""
@@ -225,7 +215,8 @@
                                     </v-list-tile-content>
                                 </v-list-tile>
                                 <v-list-tile>
-                                    <v-btn small color="primary" class="ml-auto" @click="saveResellerInformation">Save</v-btn>
+                                    <v-btn small color="primary" class="ml-auto" @click="saveResellerInformation">Save
+                                    </v-btn>
                                 </v-list-tile>
                             </v-list>
                         </v-form>
@@ -253,7 +244,7 @@
                 snackbar: false,
                 dialog: false,
                 deleteDialog: false,
-                search:'',
+                search: '',
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 newBalance: '',
@@ -278,6 +269,8 @@
                 aviableCards: [],
                 rules: {
                     counter: value => value <= 2147483647 || 'Max 2147483647',
+                    rrrCounter: value => (value <= 999 && value >= 0) || 'Min 0 Max 999',
+                    checkAdminZeros: value => ((value !== '000' && value !== '00' && value !== '0') || this.details.is_superuser) || 'Only admins can have prefix "000"',
                     number: value => {
                         const pattern = /^\d+$/;
                         return pattern.test(value) || 'Invalid number.'
@@ -312,19 +305,6 @@
                     console.log(error)
                     this.snackbar = true;
                 });
-                // this.loadingAviableCards = true;
-                // axios.get(`${this.$hostname}/api/subscribers/edit/cards/${this.$route.params.id}/`)
-                //     .then((response) => {
-                //         if (response.status === 200) {
-                //             this.aviableCards = response.data;
-                //             this.loadingAviableCards = false;
-                //             console.log(response.data)
-                //         }
-                //     }).catch((error) => {
-                //     this.text = "Connection error";
-                //     console.log(error)
-                //     this.snackbar = true;
-                // });
             },
             deleteSubscriber() {
 
@@ -340,24 +320,24 @@
                     this.snackbar = true;
                 });
             },
-            saveResellerInformation(){
+            saveResellerInformation() {
                 if (!this.$refs.form.validate()) {
                     this.text = "Fill the form correctly";
                     this.snackbar = true;
-                }else{
+                } else {
                     this.loading = true;
                     const resellerData = {
-                        username:this.details.username,
-                        // email:this.details.email,
-                        first_name:this.details.first_name,
-                        last_name:this.details.last_name,
-                        address:this.details.address,
-                        telephone:this.details.telephone,
-                        zone:this.details.zone,
-                        balance:this.details.balance,
-                        credit:this.details.credit,
-                        price_card:this.details.price_card,
-                        comment:this.details.comment
+                        username: this.details.username,
+                        rrr: this.rrr,
+                        first_name: this.details.first_name,
+                        last_name: this.details.last_name,
+                        address: this.details.address,
+                        telephone: this.details.telephone,
+                        zone: this.details.zone,
+                        balance: this.details.balance,
+                        credit: this.details.credit,
+                        price_card: this.details.price_card,
+                        comment: this.details.comment
                     };
                     axios.put(`${this.$hostname}/api/resellers/edit/${this.$route.params.id}/`, resellerData)
                         .then((response) => {
@@ -367,9 +347,9 @@
                                 this.snackbar = true;
                                 this.dialog = false;
                                 this.loading = false;
-                                setTimeout(()=>{
+                                setTimeout(() => {
                                     this.$router.push(`/resellers/${this.$route.params.id}/details`)
-                                },1500)
+                                }, 1500)
                             }
                         }).catch((error) => {
                         this.text = "Connection error";
@@ -377,6 +357,17 @@
                         this.snackbar = true;
                         this.dialog = false;
                     })
+                }
+            }
+        },
+        computed: {
+            rrr() {
+                if (this.details.rrr < 10 && this.details.rrr.length < 2) {
+                    return '00' + this.details.rrr
+                } else if (this.details.rrr < 100 && this.details.rrr.length < 3) {
+                    return '0' + this.details.rrr
+                } else {
+                    return this.details.rrr.toString()
                 }
             }
         },
@@ -393,7 +384,7 @@
 </script>
 
 <style>
-    .v-list--two-line.v-list--dense .v-list__tile{
+    .v-list--two-line.v-list--dense .v-list__tile {
         height: 72px !important;
     }
 </style>

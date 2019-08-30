@@ -7,7 +7,6 @@
 
 <script>
     import TopPanel from "@/components/topPanel/topPanel";
-
     export default {
         name: 'App',
         components: {
@@ -23,6 +22,9 @@
         },
 
         methods: {
+        },
+        mounted(){
+
         }
 
     }
