@@ -1,13 +1,11 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from backend.settings import (
-    SERVER_IP,
-    SERVER_PORT,
     SERVER_LOGIN,
     SERVER_PSWD,
 )
 
-from .models import Bouquet, Card
+from .models import Bouquet, Card, Settings
 from .dvcrypt_proto import DVCrypt
 
 
@@ -15,7 +13,8 @@ class Command(BaseCommand):
     help = 'Get bouquets from server'
 
     def handle(self, *args, **options):
-        d = DVCrypt(SERVER_IP, SERVER_PORT)
+        settings = Settings.objects.first()
+        d = DVCrypt(settings.server_ip, settings.server_port)
         d.connect()
         d.login(SERVER_LOGIN, SERVER_PSWD)
         bouquets = options['count']
@@ -45,7 +44,8 @@ class SendCards(BaseCommand):
     help = 'Send cards to server'
 
     def handle(self, *args, **options):
-        d = DVCrypt(SERVER_IP, SERVER_PORT)
+        settings = Settings.objects.first()
+        d = DVCrypt(settings.server_ip, settings.server_port)
         d.connect()
         d.login(SERVER_LOGIN, SERVER_PSWD)
         bouquets = set()

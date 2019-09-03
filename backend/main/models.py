@@ -5,8 +5,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.core.signals import Signal
 
-from backend.settings import SSSSS
-
 user_registrated = Signal(providing_args=['instance'])
 
 
@@ -116,7 +114,8 @@ class Card(models.Model):
         length = len(str(self.pk))
         nnnnnn = zero[:6-length] + str(self.pk)
         RRR = self.reseller.rrr
-        return '{}-{}-{}'.format(SSSSS, str(RRR), nnnnnn)
+        settings = Settings.objects.first()
+        return '{}-{}-{}'.format(settings.sssss, str(RRR), nnnnnn)
 
     def price(self):
         if self.packages.exists():
@@ -168,6 +167,11 @@ class Subscriber(models.Model):
 
 
 class Settings(models.Model):
+    server_ip = models.CharField(verbose_name='IP server', max_length=16, blank=True, null=True)
+    server_port = models.IntegerField(verbose_name='Port', null=True)
+    max_cards = models.IntegerField(verbose_name='Max count cards', default=100000)
+    sssss = models.CharField(verbose_name='Prefix system', max_length=5, default='00000')
+
     kind_payment = models.CharField(verbose_name='payment', max_length=10, default='PREPAYMENT')
     kind_period = models.CharField(verbose_name='period', max_length=10, default='MONTHS')
     quantity = models.IntegerField(verbose_name='quantity', default=1)
@@ -234,11 +238,9 @@ class ReportSubscription(models.Model):
 
 
 class ReportFinance(models.Model):
-    package_price = models.IntegerField(verbose_name='Package price', db_index=True, null=True)
-    subscription = models.IntegerField(verbose_name='Continue sub', db_index=True, null=True)
-    price_card = models.IntegerField(verbose_name='Price card', db_index=True, null=True)
+    spend_money = models.IntegerField(verbose_name='Money', db_index=True, default=0)
     created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
-    reseller = models.ForeignKey(User, on_delete=models.PROTECT)
+    reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='reports_finance')
 
     class Meta:
         ordering = ['created_at']

@@ -84,8 +84,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SSSSS = os.environ.get('SSSSS') or '00000'
-
 AUTH_USER_MODEL = 'main.Reseller'
 
 EMAIL_USE_TLS = True
@@ -128,10 +126,6 @@ REST_FRAMEWORK = {
 }
 
 MAX_BOUQUETS = 127
-
-SERVER_IP = '31.43.129.21'
-
-SERVER_PORT = 8100
 
 SERVER_LOGIN = 'admin'
 

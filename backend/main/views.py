@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
 from django.core.signing import BadSignature
 from django.contrib.auth import get_user_model
@@ -32,8 +32,8 @@ from .models import (
     DelayedAdditionPackage,
     DelayedRemovePackage,
     ReportSubscription,
-    ReportFinance,
     SynchronizeForms,
+    ReportFinance,
     reset_password,
 )
 from .serializer import (
@@ -65,6 +65,7 @@ from .serializer import (
     ResellerTieOneCardSerializer,
     ResellerMakeAdminSerializer,
     SynchrFormsSerializer,
+    LogsSubscriberSerializer,
 )
 
 from .api import (
@@ -276,7 +277,7 @@ class CardCreateView(generics.CreateAPIView):
 
 class CreateRangeCardView(generics.ListCreateAPIView):
     queryset = Card.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
     serializer_class = CardCreateSerializer
 
     def get(self, request, *args, **kwargs):
@@ -398,8 +399,6 @@ class CardForceUpdatePackageView(generics.UpdateAPIView):
                 if subscriber.balance - package.tariff >= 0:
                     subscriber.balance -= package.tariff
                     subscriber.save()
-                    ReportFinance.objects.create(reseller=card.reseller,
-                                                 package_price=package.tariff)
                 else:
                     return Response({'errors': 'Not enough money in the account'},
                                     status=HTTP_400_BAD_REQUEST)
@@ -564,7 +563,6 @@ class SubscriberUpdateCardsView(APIView):
             subscriber.balance -= card.price()
             log = 'ID SUBSCRIBER: {}; LOG: Payed. Price - {}; Balance - {};'
             logging(LogsSubscriber, subscriber, log, subscriber.balance, card.price())
-            ReportFinance.objects.create(reseller=reseller, price_card=card.price())
 
         data.append(card)
         subscriber.cards.set(data)
@@ -615,17 +613,17 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
         subscriber = Subscriber.objects.get(pk=kwargs['pk'])
         new_balance = int(request.data['balance'])
         user = request.user
-        diff = user.balance - new_balance
-        if diff > 0:
+
+        absolute = user.balance + abs(user.credit)
+        diff = absolute - new_balance
+        if diff >= 0:
             subscriber.balance += new_balance
             user.balance -= new_balance
+            ReportFinance.objects.create(spend_money=new_balance,
+                                         reseller=user)
         else:
-            if user.credit > diff:
-                return Response({'detail': 'Your balance cannot be less your credit'},
-                                status=HTTP_400_BAD_REQUEST)
-            else:
-                subscriber.balance += new_balance
-                user.balance -= new_balance
+            return Response({'detail': 'Your balance cannot be less your credit'},
+                            status=HTTP_400_BAD_REQUEST)
         user.save(update_fields=['balance'])
         subscriber.save(update_fields=['balance'])
         log = 'ID SUBSCRIBER: {}; LOG: Edit balance. New value - {};'
@@ -727,8 +725,14 @@ class SettingsView(generics.RetrieveAPIView):
 
     def get(self, request, *args, **kwargs):
         settings = Settings.objects.first()
+        result = {}
         serializer = self.get_serializer(instance=settings)
-        return Response(serializer.data)
+        result.update(serializer.data)
+        array_times = []
+        for time in SynchronizeForms.objects.all():
+            array_times.append({'value': time.date.time().strftime('%H:%M')})
+        result.update({'periods': array_times})
+        return Response(result)
 
 
 class ChangeSettingsView(generics.UpdateAPIView):
@@ -868,129 +872,6 @@ class ResellerPickUpOneCard(generics.UpdateAPIView):
         return Response(serializer.data)
 
 
-def reports(context, q=None):
-    f = q if q else Q()
-    subscribers = Subscriber.objects.filter(f).count()
-    cards = Card.objects.filter(~Q(subscriber=None) & f).count()  # кол-во привязанных карт
-    resellers = ReportSubscription.objects.values('reseller').distinct()
-    count = 0  # кол-во подписок
-    for res in resellers:
-        cur_res = User.objects.get(pk=res['reseller'])
-        try:
-            count += ReportSubscription.objects.filter(
-                f & Q(reseller=cur_res)).latest().subscription
-        except ReportSubscription.DoesNotExist:
-            count += 0
-
-    finance_sell_sub = ReportFinance.objects.filter(f).aggregate(
-        money_sub=models.Sum('subscription'))['money_sub']
-
-    finance_sell_card = ReportFinance.objects.filter(f).aggregate(
-        money_card=models.Sum('price_card'))['money_card']
-
-    finance_sell_package = ReportFinance.objects.filter(f).aggregate(
-        money_pack=models.Sum('package_price'))['money_pack']
-
-    context.update({'subscribers': subscribers,
-                    'cards': cards,
-                    'count_sub': count,
-                    'sell_sub': finance_sell_sub,
-                    'sell_card': finance_sell_card,
-                    'sell_pack': finance_sell_package})
-
-
-def reports_reseller(res, context, q=None):
-    f = q if q else Q()
-    try:
-        user = User.objects.get(email=res)
-    except User.DoesNotExist:
-        return Response(status=HTTP_400_BAD_REQUEST)
-    subscribers = Subscriber.objects.filter(
-        Q(reseller=user) & f).count()
-    cards = Card.objects.filter(
-        ~Q(subscriber=None) & Q(reseller=user) & f).count()
-    try:
-        sub = ReportSubscription.objects.filter(
-            reseller=user).latest().subscription
-    except ReportSubscription.DoesNotExist:
-        sub = 0
-
-    finance_sell_sub = ReportFinance.objects.filter(
-        Q(reseller=user) & f).aggregate(
-        money_sub=models.Sum('subscription'))['money_sub']
-
-    finance_sell_card = ReportFinance.objects.filter(
-        Q(reseller=user) & f).aggregate(
-        money_card=models.Sum('price_card'))['money_card']
-
-    finance_sell_package = ReportFinance.objects.filter(
-        Q(reseller=user) & f).aggregate(
-        money_pack=models.Sum('package_price'))['money_pack']
-
-    context.update({'subscribers': subscribers,
-                    'cards': cards,
-                    'count_sub': sub,
-                    'reseller': user.email,
-                    'sell_sub': finance_sell_sub,
-                    'sell_card': finance_sell_card,
-                    'sell_pack': finance_sell_package})
-
-
-def reports_sub(context, email_sub, q=None):
-    try:
-        subscriber = Subscriber.objects.get(email=email_sub)
-    except Subscriber.DoesNotExist:
-        return Response(status=HTTP_400_BAD_REQUEST)
-    logs = list(LogsSubscriber.objects.filter(
-        q if q else Q() & Q(subscriber=subscriber)).values())
-    context.update({'subscriber_logs': logs})
-
-
-class Reports(APIView):
-    permission_classes = [IsAdminUser]
-
-    def post(self, request):
-        email_sub = request.data.get('subscriber', None)
-
-        reseller = request.data.get('reseller', None)
-
-        left = request.data.get('dateLt', None)
-        right = request.data.get('dateRt', None)
-
-        context = {}
-
-        if left and right:
-            lt, rt = left.split('-'), right.split('-')
-            lt = [int(n) for n in lt]
-            rt = [int(n) for n in rt]
-            lt_date = datetime(*lt)
-            gt_date = datetime(*rt)
-            q = Q(created_at__gt=lt_date) & Q(created_at__lt=gt_date)
-            if reseller:
-                reports_reseller(reseller, context, q=q)
-            else:
-                reports(context, q)
-        else:
-            if reseller:
-                reports_reseller(reseller, context)
-            else:
-                reports(context)
-
-        if email_sub:
-            if left and right:
-                lt, rt = left.split('-'), right.split('-')
-                lt = [int(n) for n in lt]
-                rt = [int(n) for n in rt]
-                lt_date = datetime(*lt)
-                gt_date = datetime(*rt)
-                q = Q(date__gt=lt_date) & Q(date__lt=gt_date)
-                reports_sub(context, email_sub, q)
-            else:
-                reports_sub(context, email_sub)
-
-        return Response(context)
-
-
 class SendCardsView(APIView):
     permission_classes = [IsAdminUser]
 
@@ -1042,51 +923,101 @@ class SynchronizeView(APIView):
 class Dashboard(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        values, daysSub = [], set()
 
-        for day in Subscriber.objects.values('created_at__day').distinct():
-            daysSub.add(day['created_at__day'])
+class ReportSubsView(APIView):
+    permission_classes = [IsAdminUser]
 
-        days = list(daysSub)
+    def post(self, request):
+        """
 
-        for day in days:
-            values.append(
-                Subscriber.objects.filter(created_at__day__lt=day+1).count())
-
-        qdates = list(
-            Subscriber.objects.values('created_at').distinct())
-        qdates = qdates[:len(days)]
-
-        xSub = ['T'.join(str(date['created_at']).split())
-                for date in qdates]
-
-        cards, daysCard = [], set()
-
-        for day in Card.objects.values('created_at__day').distinct():
-            daysCard.add(day['created_at__day'])
-
-        days = list(daysCard)
-
-        for day in days:
-            cards.append(
-                Card.objects.filter(created_at__day__lt=day+1).count())
-
-        qdates = list(
-            Card.objects.values('created_at').distinct())
-        qdates = qdates[:len(days)]
-
-        xCard = ['T'.join(str(date['created_at']).split())
-                 for date in qdates]
-
-        totalCards = Card.objects.count()
+        :param request:
+        :return: Count subscribers by reseller
+        """
+        print(request.data)
+        datelt = request.data.get('dateLt', None)
+        dateRt = request.data.get('dateRt', None)
+        result = {}
+        objects = []
         totalSubs = Subscriber.objects.count()
+        for user in User.objects.annotate(subs=Count('subscriber')):
+            objects.append({'name': user.username, 'item': user.subs})
+        result['objects'] = objects
+        result['total'] = totalSubs
+        return Response(result)
 
-        result = {
-            'xSub': xSub, 'ySub': values,
-            'xCard': xCard, 'yCard': cards,
-            'totalCards': totalCards,
-            'totalSubs': totalSubs,
-        }
-        print(result)
+
+class ReportCardsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        """
+
+        :param request:
+        :return: Count cards tied to subscribers
+        """
+        result = {}
+        objects = []
+        totalCards = Card.objects.filter(~Q(subscriber=None)).count()
+        for user in User.objects.annotate(cs=Count('cards', filter=~Q(cards__subscriber=None))):
+            objects.append({'name': user.username, 'item': user.cs})
+        result['objects'] = objects
+        result['total'] = totalCards
+        return Response(result)
+
+
+class ReportLogsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        """
+
+        :param request:
+        :return: Logs of subscriber
+        """
+        email = request.data.get('email')
+        subscriber = Subscriber.objects.get(email=email)
+        serializer = LogsSubscriberSerializer(subscriber.logs, many=True)
+        return Response(serializer)
+
+
+class ReportFinanceView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        """
+
+        :param request:
+        :return: Spend money reseller
+        """
+        result = {}
+        objects = []
+        totalMoney = ReportFinance.objects.aggregate(
+            money=models.Sum('spend_money'))['money']
+        for user in User.objects.all():
+            money = user.reports_finance.aggregate(money=models.Sum('spend_money'))['money']
+            objects.append({'name': user.username, 'item': 0 if money is None else money})
+        result['objects'] = objects
+        result['total'] = totalMoney
+        return Response(result)
+
+
+class ReportCardsOfResellerView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        """
+
+        :param request:
+        :return: Cards of reseller
+        """
+        result = {}
+        objects = []
+        totalCards = Card.objects.count()
+        for user in User.objects.all():
+            cards = [card.label() for card in user.cards.all()]
+            objects.append({'name': user.username,
+                            'total': user.cards.count(),
+                            'cards': cards})
+        result['objects'] = objects
+        result['total'] = totalCards
         return Response(result)
