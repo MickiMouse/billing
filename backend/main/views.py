@@ -257,6 +257,15 @@ class CardListView(generics.ListAPIView):
     permission_classes = [IsOwner, IsAuthenticated]
     serializer_class = CardSerializer
 
+    def get(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            cards = Card.objects.all()
+            serializer = self.get_serializer(cards, many=True)
+            return Response(serializer.data)
+        cards = request.user.cards.all()
+        serializer = self.get_serializer(cards, many=True)
+        return Response(serializer.data)
+
 
 class CardCreateView(generics.CreateAPIView):
     """Create a Card"""
@@ -1063,7 +1072,7 @@ class ReportCardsOfResellerView(APIView):
         objects = []
         totalCards = Card.objects.count()
         for user in User.objects.all():
-            cards = [card.label() for card in user.cards.all()]
+            cards = [card.pk for card in user.cards.all()]
             objects.append({'name': user.username,
                             'total': user.cards.count(),
                             'cards': cards})
