@@ -731,6 +731,9 @@ class SettingsView(generics.RetrieveAPIView):
         array_times = []
         for time in SynchronizeForms.objects.all():
             array_times.append({'value': time.date.time().strftime('%H:%M')})
+        length = 8 - len(array_times)
+        for i in range(length):
+            array_times.append({})
         result.update({'periods': array_times})
         return Response(result)
 
@@ -746,12 +749,16 @@ class ChangeSettingsView(generics.UpdateAPIView):
         settings.kind_payment = request.data.get('kind_payment')
         settings.quantity = request.data.get('quantity')
         settings.kind_period = request.data.get('kind_period')
+        settings.sssss = request.data.get('sssss')
+        settings.max_cards = request.data.get('max_cards')
+        settings.server_port = request.data.get('server_port')
+        settings.server_ip = request.data.get('server_ip')
         settings.save()
         serializer = self.get_serializer(instance=settings)
         return Response(serializer.data)
 
 
-class EnableSuspendSubscriptionView(generics.UpdateAPIView):
+class SuspendSubscriptionView(generics.UpdateAPIView):
     queryset = Card.objects.all()
     permission_classes = [IsOwner, IsAuthenticated]
     serializer_class = CardSuspendSubscribtionSerializer
@@ -767,7 +774,15 @@ class EnableSuspendSubscriptionView(generics.UpdateAPIView):
             logging(LogsCard, card, log, reseller.id, reseller.username, reseller.email)
             serializer = self.get_serializer(instance=card)
             return Response(serializer.data)
-        return Response(self.get_serializer(instance=card).data)
+        else:
+            card.expired_date = datetime.now() + card.suspend_interval()
+            card.suspend = False
+            card.save(update_fields=['suspend', 'expired_date'])
+            reseller = card.reseller
+            log = 'ID CARD: {}; LOG: Reseller ({}, {}, {}) disable suspend subscription;'
+            logging(LogsCard, card, log, reseller.id, reseller.username, reseller.email)
+            serializer = self.get_serializer(instance=card)
+            return Response(serializer.data)
 
 
 class DisableSuspendSubscriptionView(generics.UpdateAPIView):
@@ -907,10 +922,13 @@ class SynchronizeView(APIView):
 
     def post(self, request):
         periods = request.data.get('periods')
+        print(periods)
         date = str(datetime.now().date()).split('-')
         date = [int(n) for n in date]
+        for sync in SynchronizeForms.objects.all():
+            sync.delete()
         for val in periods:
-            if 'value' in val:
+            if val is not None and 'value' in val:
                 time = val['value'].split(':')
                 time = [int(n) for n in time]
                 result = datetime(*date, *time)
@@ -922,6 +940,9 @@ class SynchronizeView(APIView):
 
 class Dashboard(APIView):
     permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({'message': 'OK'})
 
 
 class ReportSubsView(APIView):
@@ -935,11 +956,15 @@ class ReportSubsView(APIView):
         """
         print(request.data)
         datelt = request.data.get('dateLt', None)
-        dateRt = request.data.get('dateRt', None)
+        datert = request.data.get('dateRt', None)
+        if datelt and datert:
+            q = Q(subscriber__created_at__gt=datelt) & Q(subscriber__created_at__lt=datert)
+        else:
+            q = None
         result = {}
         objects = []
         totalSubs = Subscriber.objects.count()
-        for user in User.objects.annotate(subs=Count('subscriber')):
+        for user in User.objects.annotate(subs=Count('subscriber', filter=q if q else Q())):
             objects.append({'name': user.username, 'item': user.subs})
         result['objects'] = objects
         result['total'] = totalSubs
@@ -955,10 +980,19 @@ class ReportCardsView(APIView):
         :param request:
         :return: Count cards tied to subscribers
         """
+        print(request.data)
+        datelt = request.data.get('dateLt', None)
+        datert = request.data.get('dateRt', None)
+        if datelt and datert:
+            q = Q(created_at__gt=datelt) & Q(created_at__lt=datert)
+            q2 = Q(cards__created_at__gt=datelt) & Q(cards__created_at__lt=datert)
+        else:
+            q = None
+            q2 = None
         result = {}
         objects = []
-        totalCards = Card.objects.filter(~Q(subscriber=None)).count()
-        for user in User.objects.annotate(cs=Count('cards', filter=~Q(cards__subscriber=None))):
+        totalCards = Card.objects.filter(~Q(subscriber=None) & q if q else Q()).count()
+        for user in User.objects.annotate(cs=Count('cards', filter=~Q(cards__subscriber=None) & q2 if q2 else Q())):
             objects.append({'name': user.username, 'item': user.cs})
         result['objects'] = objects
         result['total'] = totalCards
@@ -974,10 +1008,18 @@ class ReportLogsView(APIView):
         :param request:
         :return: Logs of subscriber
         """
+        print(request.data)
+        datelt = request.data.get('dateLt', None)
+        datert = request.data.get('dateRt', None)
+        if datelt and datert:
+            q = Q(date__lt=datert) & Q(date__gt=datelt)
+        else:
+            q = None
         email = request.data.get('email')
         subscriber = Subscriber.objects.get(email=email)
-        serializer = LogsSubscriberSerializer(subscriber.logs, many=True)
-        return Response(serializer)
+        logs = subscriber.logs.filter(Q(subscriber=subscriber) & q if q else Q())
+        serializer = LogsSubscriberSerializer(logs, many=True)
+        return Response(serializer.data)
 
 
 class ReportFinanceView(APIView):
@@ -989,12 +1031,19 @@ class ReportFinanceView(APIView):
         :param request:
         :return: Spend money reseller
         """
+        print(request.data)
+        datelt = request.data.get('dateLt', None)
+        datert = request.data.get('dateRt', None)
+        if datelt and datert:
+            q = Q(created_at__lt=datert) & Q(created_at__gt=datelt)
+        else:
+            q = None
         result = {}
         objects = []
-        totalMoney = ReportFinance.objects.aggregate(
+        totalMoney = ReportFinance.objects.filter(q if q else Q()).aggregate(
             money=models.Sum('spend_money'))['money']
         for user in User.objects.all():
-            money = user.reports_finance.aggregate(money=models.Sum('spend_money'))['money']
+            money = user.reports_finance.filter(q if q else Q()).aggregate(money=models.Sum('spend_money'))['money']
             objects.append({'name': user.username, 'item': 0 if money is None else money})
         result['objects'] = objects
         result['total'] = totalMoney

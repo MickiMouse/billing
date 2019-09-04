@@ -52,10 +52,11 @@ class SendCards(BaseCommand):
         start = options['start']
         stop = options['stop']
         for card in Card.objects.filter(Q(pk__gt=start) & Q(pk__lt=stop)):
-            for package in card.packages.all():
-                for b in package.bouquets.all():
-                    bouquets.add(b.number)
-            d.subscriber_set(card.pk, card.pk, bouquets, 'low')
-            bouquets.clear()
+            if card.status() == 'Active':
+                for package in card.packages.all():
+                    for b in package.bouquets.all():
+                        bouquets.add(b.number)
+                d.subscriber_set(card.pk, card.pk, bouquets, 'low')
+                bouquets.clear()
         d.logout()
         d.disconnect()
