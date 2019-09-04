@@ -129,16 +129,6 @@
                                     <v-list-tile-title>Total cards</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.cards.length}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
-                                <!--<v-list-tile-avatar>-->
-                                <!--<v-tooltip bottom>-->
-                                <!--<template v-slot:activator="{ on }">-->
-                                <!--<v-btn v-on="on" :to="`/cards/${details.cards.pk}/details/`" color="info" ripple icon small dark>-->
-                                <!--<v-icon small>info</v-icon>-->
-                                <!--</v-btn>-->
-                                <!--</template>-->
-                                <!--<span>Detail</span>-->
-                                <!--</v-tooltip>-->
-                                <!--</v-list-tile-avatar>-->
                             </v-list-tile>
                         </v-list>
                     </v-card>
@@ -179,7 +169,7 @@
                                         <!--</template>-->
                                         <!--<span>Detail</span>-->
                                     <!--</v-tooltip>-->
-                                    <v-tooltip bottom>
+                                    <v-tooltip bottom v-if="$session.get('isSuperuser')">
                                         <template v-slot:activator="{ on }">
                                             <v-btn v-on="on" color="error" @click="removeBouquet(props.item.number)" ripple
                                                    icon small dark>
@@ -188,6 +178,7 @@
                                         </template>
                                         <span>Remove</span>
                                     </v-tooltip>
+                                    <h5 v-else>-</h5>
                                 </td>
                             </template>
                         </v-data-table>
@@ -203,6 +194,7 @@
                                class="elevation-1"
                                :loading="loadingAvailableBouquets"
                                :search="search"
+                               v-if="$session.get('isSuperuser')"
                        >
                            <template slot="items" slot-scope="props">
                                <td class="text-xs-left no-wrap">{{ props.item.name }}</td>

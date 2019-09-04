@@ -68,13 +68,13 @@
                                     <v-list-tile-title>Status</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.status}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
-                                <!--<v-list-tile-avatar>-->
-                                <!--<v-switch-->
-                                <!--v-model="details.status"-->
-                                <!--@change="updateStatus"-->
-                                <!--:disabled="details.status === 'Expired'"-->
-                                <!--&gt;</v-switch>-->
-                                <!--</v-list-tile-avatar>-->
+                                <v-list-tile-avatar>
+                                    <v-switch
+                                            v-model="status"
+                                            @change="updateStatus"
+                                            :disabled="details.status !== 'Active' && details.status !== 'Suspend'"
+                                    ></v-switch>
+                                </v-list-tile-avatar>
                             </v-list-tile>
                             <v-list-tile
                                     avatar
@@ -436,9 +436,9 @@
             }
         },
         computed: {
-            status() {
-                return this.details.status ? "Active" : "Inactive";
-            },
+            status(){
+                return this.details.status === 'Active';
+            }
         },
         methods: {
             getData() {
@@ -473,7 +473,7 @@
                 });
             },
             updateStatus() {
-                axios.put(`${this.$hostname}/api/cards/edit/status/${this.$route.params.id}/`, {status: this.status})
+                axios.put(`${this.$hostname}/api/cards/edit/status/${this.$route.params.id}/`)
                     .then((response) => {
                         if (response.status === 200) {
                             this.getData();

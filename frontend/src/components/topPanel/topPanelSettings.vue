@@ -123,12 +123,21 @@
                                         type="number"
                                         :rules="[rules.counterUpdatePeriods]"
                                         v-model="counterUpdatePeriods"
-                                        @input="log"
                                 ></v-text-field>
                             </v-form>
                         </v-list-tile-content>
                     </v-list-tile>
                 </v-list>
+                <v-subheader>Synchronization at:</v-subheader>
+                <v-layout
+                        wrap
+                        px-3
+                >
+                    <v-flex sm3 pr-3  v-for="(period,key) in serverPeriods" :key="key">
+                        <h3 class="subheading">{{period.value}}</h3>
+                    </v-flex>
+                </v-layout>
+                <v-subheader>New synchronization periods:</v-subheader>
                 <v-form class="w-100 px-3" ref="formPeriods" @submit.prevent="synchronize()">
                     <v-layout
                             wrap
@@ -169,6 +178,41 @@
                         </v-flex>
                     </v-layout>
                 </v-form>
+                <v-divider></v-divider>
+                <v-subheader>Server preferences:</v-subheader>
+                <v-layout
+                        wrap
+                        px-3
+                >
+                    <v-flex sm3 pr-3>
+                        <v-text-field
+                                label="Cards prefix"
+                                type="number"
+                                :rules="[rules.rrrCounter,rules.number,rules.required]"
+                                v-model="sssss"></v-text-field>
+                    </v-flex>
+                    <v-flex sm3 pr-3>
+                        <v-text-field
+                                label="Max cards"
+                                type="number"
+                                :rules="[rules.cardCounter,rules.number,rules.required]"
+                                v-model="max_cards"></v-text-field>
+                    </v-flex>
+                    <v-flex sm3 pr-3>
+                        <v-text-field
+                                label="Server ip"
+                                type="text"
+                                :rules="[rules.ipAddress,rules.required]"
+                                v-model="server_ip"></v-text-field>
+                    </v-flex>
+                    <v-flex sm3 pr-3>
+                        <v-text-field
+                                label="Server port"
+                                type="number"
+                                :rules="[rules.portCounter,rules.number,rules.required]"
+                                v-model="server_port"></v-text-field>
+                    </v-flex>
+                </v-layout>
             </v-card>
         </v-dialog>
     </div>
@@ -195,9 +239,13 @@
             updatePeriodsArray:[{},{},{},{},{},{},{},{}],
             updatePeriodsArrayHack:[{},{},{},{},{},{},{},{}],
             counterUpdatePeriods: 1,
+            serverPeriods:[],
             kind_payment: '',
             kind_period: '',
             numberOfPeriod: 1,
+            max_cards: 0,
+            server_ip: '',
+            server_port:'',
             rules: {
                 required: value => !!value || 'Required.',
                 counter: value => value <= 100 || 'Max 100',
@@ -207,7 +255,15 @@
                     const pattern = /^\d+$/;
                     return pattern.test(value) || 'Invalid number.'
                 },
+                rrrCounter: value => (value <= 99999 && value >= 0 && value.length<=5) || 'Min 0 Max 99999',
+                cardCounter: value => (value <= 100000 && value >= 0) || 'Min 0 Max 100000',
+                ipAddress: value => {
+                    const pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                    return pattern.test(value) || 'Invalid id address'
+                },
+                portCounter: value => (value <= 65535 && value >= 0) || 'Min 0 Max 65535',
             },
+            sssss: '00000',
             numOfBouquets: 1,
         }),
         computed: {
@@ -219,14 +275,23 @@
                 } else {
                     return new Array(Number.parseInt(this.counterUpdatePeriods))
                 }
-
-
+            },
+            ssssWithZeros() {
+                if (this.sssss < 10 && this.sssss.length < 2) {
+                    return '0000' + this.sssss
+                } else if (this.sssss < 100 && this.sssss.length < 3) {
+                    return '000' + this.sssss
+                }else  if (this.sssss < 1000 && this.sssss.length < 4) {
+                    return '00' + this.sssss
+                }else if (this.sssss < 10000 && this.sssss.length < 5) {
+                    return '0' + this.sssss
+                } else {
+                    return this.sssss.toString()
+                }
             }
         },
         methods: {
-            log() {
-                console.log(this.counterUpdatePeriods, this.counterUpdatePeriodsArray)
-            },
+
             getData() {
                 // this.loadingSettings = true;
                 this.loading = true;
@@ -236,7 +301,12 @@
                             this.kind_payment = response.data.kind_payment;
                             this.kind_period = response.data.kind_period;
                             this.numberOfPeriod = response.data.quantity;
+                            this.sssss = response.data.sssss;
+                            this.max_cards = response.data.max_cards;
+                            this.server_ip = response.data.server_ip;
+                            this.server_port = response.data.server_port;
                             console.log(response.data)
+                            this.serverPeriods = response.data.periods;
                             this.loading = false;
                             this.$store.commit('set', {
                                 type: 'isPREPAYMENT',
@@ -245,7 +315,6 @@
                         }
                     }).catch((error) => {
                     this.text = "Connection error";
-                    console.log(error)
                     this.snackbar = true;
                 });
             },
@@ -258,7 +327,11 @@
                     axios.put(`${this.$hostname}/api/change-settings/`, {
                         kind_payment: this.kind_payment,
                         kind_period: this.kind_period,
-                        quantity: this.numberOfPeriod
+                        quantity: this.numberOfPeriod,
+                        sssss: this.ssssWithZeros,
+                        max_cards: this.max_cards,
+                        server_ip: this.server_ip,
+                        server_port: this.server_port,
                     })
                         .then((response) => {
                             if (response.status === 200) {
