@@ -131,6 +131,9 @@
             if (!this.$session.exists()) {
                 this.$router.push('/')
             }
+            if(!this.$session.get('isSuperuser')){
+                this.$router.push('/cards')
+            }
         },
         mounted() {
             this.getData();

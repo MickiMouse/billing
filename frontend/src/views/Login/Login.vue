@@ -133,10 +133,9 @@
                                 this.$router.push('/dashboard')
                             }
                         }).catch((error) => {
-                        this.text = "Connection error";
+
                         console.log(error)
-                        this.snackbar = true;
-                        /** test **/
+
                     });
                 }
 
