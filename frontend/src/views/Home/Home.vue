@@ -14,7 +14,7 @@
                 </v-flex>
                 <v-flex md4 justify-center>
                     <v-card>
-                       <bar/>
+                        <bar/>
                     </v-card>
                 </v-flex>
                 <v-flex md6 justify-center>
@@ -58,11 +58,11 @@
                 selection: 'one_year',
 
                 series: [{
-                    name:'Cards',
+                    name: 'Cards',
                     data: []
                 },
                     {
-                        name:'Subscribers',
+                        name: 'Subscribers',
                         data: []
                     }],
                 chartOptions: {
@@ -71,8 +71,7 @@
                         horizontalAlign: 'left'
                     },
                     stacked: true,
-                    annotations: {
-                    },
+                    annotations: {},
                     dataLabels: {
                         enabled: false
                     },
@@ -85,6 +84,9 @@
                         type: 'datetime',
                         // min: new Date().getTime(),
                         tickAmount: 6,
+                    },
+                    yaxis: {
+                        min: 0
                     },
                     tooltip: {
                         x: {
@@ -122,13 +124,13 @@
                     .then((response) => {
                         console.log(response.data)
                         if (response.status === 200) {
-                            const xCard = response.data.xCard;
-                            const yCard = response.data.yCard;
+                            const xCard = response.data.x;
+                            const yCard = response.data.cards;
                             const dataCard = xCard.map((item, i) => {
                                 return [new Date(item).getTime(), yCard[i]]
                             });
-                            const xSub = response.data.xSub;
-                            const ySub = response.data.ySub;
+                            const xSub = response.data.x;
+                            const ySub = response.data.subs;
                             const dataSub = xSub.map((item, i) => {
                                 return [new Date(item).getTime(), ySub[i]]
                             });
@@ -150,7 +152,7 @@
             if (!this.$session.exists()) {
                 this.$router.push('/')
             }
-            if(!this.$session.get('isSuperuser')){
+            if (!this.$session.get('isSuperuser')) {
                 this.$router.push('/cards')
             }
         },

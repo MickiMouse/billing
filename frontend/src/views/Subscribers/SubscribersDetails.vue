@@ -69,7 +69,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Balance</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.balance}}</v-list-tile-sub-title>
+                                    <v-list-tile-sub-title>{{details.balance + $store.getters.currency}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                                 <v-list-tile-action>
                                     <v-dialog v-model="dialog" persistent max-width="600px">
@@ -115,7 +115,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Cards price</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{totalPrice}}
+                                    <v-list-tile-sub-title>{{totalPrice + $store.getters.currency}}
                                     </v-list-tile-sub-title>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -220,7 +220,7 @@
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
-                                <td class="text-xs-left no-wrap">{{ props.item.price }}</td>
+                                <td class="text-xs-left no-wrap">{{ props.item.price+ $store.getters.currency}}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -258,7 +258,7 @@
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
-                                <td class="text-xs-left no-wrap">{{ props.item.price }}</td>
+                                <td class="text-xs-left no-wrap">{{ props.item.price + $store.getters.currency}}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -486,7 +486,6 @@
         },
         mounted() {
             this.getData();
-
         }
     }
 </script>

@@ -176,7 +176,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Balance</v-list-tile-title>
-                                    <p class="mb-0">{{details.balance}}</p>
+                                    <p class="mb-0">{{details.balance + $store.getters.currency}}</p>
                                 </v-list-tile-content>
                                 <v-list-tile-action>
                                     <v-dialog v-model="dialog" persistent max-width="600px">
@@ -223,7 +223,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Credit</v-list-tile-title>
-                                    <p class="mb-0">{{details.credit}}</p>
+                                    <p class="mb-0">{{details.credit + $store.getters.currency}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile
@@ -235,7 +235,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Card price</v-list-tile-title>
-                                    <p class="mb-0">{{details.price_card}}</p>
+                                    <p class="mb-0">{{details.price_card + $store.getters.currency}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile

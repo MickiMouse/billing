@@ -40,7 +40,7 @@
                             <td class="text-xs-left no-wrap">{{ props.item.username}}
                             </td>
                             <td class="text-xs-left no-wrap">{{ props.item.email }}</td>
-                            <td class="text-xs-left no-wrap">{{ props.item.balance }}</td>
+                            <td class="text-xs-left no-wrap">{{ props.item.balance + $store.getters.currency}}</td>
                             <td class="text-xs-left">
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on }">

@@ -14,12 +14,12 @@
             </v-btn>
         </v-snackbar>
         <v-container fluid id="main-container" grid-list-md>
-            <v-layout row wrap justify-center>
-                <v-flex xs3 justify-center>
+            <v-layout row wrap>
+                <v-flex xs12 justify-center>
                     <v-form @submit.prevent="showLogs" ref="form">
                         <v-card class="px-3 mb-3 pb-3">
-                            <v-row>
-                                <v-col cols="12" lg="6">
+                            <v-row class="d-flex">
+                                <v-col cols="6" lg="6" class="mr-5">
                                     <v-menu
                                             ref="menu1"
                                             v-model="menu1"
@@ -45,7 +45,7 @@
                                         <v-date-picker v-model="dateLt" no-title :max="dateRt" @input="menu1 = false"></v-date-picker>
                                     </v-menu>
                                 </v-col>
-                                <v-col cols="12" lg="6">
+                                <v-col cols="6" lg="6">
                                     <v-menu
                                             v-model="menu2"
                                             :close-on-content-click="false"
@@ -74,7 +74,7 @@
                         </v-card>
                     </v-form>
                 </v-flex>
-                <v-flex xs9>
+                <v-flex xs12>
                     <v-tabs grow @change="tabValue != 'report-logs' ? getData() : ''" v-model="tabValue">
                         <v-tab href="#report-subs">
                             <v-icon left>mdi-account</v-icon>

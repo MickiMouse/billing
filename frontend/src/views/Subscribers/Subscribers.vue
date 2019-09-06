@@ -41,7 +41,7 @@
                                props.item.first_name.charAt(0).toUpperCase() + '.' }}
                            </td>
                            <td class="text-xs-left no-wrap">{{ props.item.email }}</td>
-                           <td class="text-xs-left no-wrap">{{ props.item.balance }}</td>
+                           <td class="text-xs-left no-wrap">{{ props.item.balance + currency }}</td>
                            <td class="text-xs-left no-wrap">{{ props.item.cards.length }}</td>
                            <td class="text-xs-left">
                                <v-tooltip bottom>
@@ -305,6 +305,7 @@
         },
         mounted() {
             this.getData();
+            this.currency = this.$store.getters.currency;
         },
 
     }

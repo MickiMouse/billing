@@ -15,6 +15,7 @@ export default new Vuex.Store({
     state: {
         MenuVisible: false,
         isPREPAYMENT: false,
+        currency: '$'
     },
     getters: {
         menuVisible(state){
@@ -22,12 +23,14 @@ export default new Vuex.Store({
         },
         isPREPAYMENT(state){
             return state.isPREPAYMENT;
+        },
+        currency(state){
+            return state.currency;
         }
     },
     mutations: {
         set(state, {type, items}) {
             state[type] = items;
-            console.log(type,items)
         }
     },
     actions: {
