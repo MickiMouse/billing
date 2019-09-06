@@ -27,19 +27,15 @@
                     <v-list-group
                             v-if="props.item.cards.length > 0 && props.item.cards[0]!=='None'"
                     >
-                        <div class="cards-wrapper">
-                            <div class="cards-inner">
-                                <v-list-item
-                                        v-for="(card, i) in props.item.cards"
-                                        :key="i"
-                                >
+                        <v-list-item
+                                v-for="(card, i) in props.item.cards"
+                                :key="i"
+                        >
 
-                                    <v-list-tile-sub-title>
-                                        {{card}}
-                                    </v-list-tile-sub-title>
-                                </v-list-item>
-                            </div>
-                        </div>
+                            <v-list-tile-sub-title>
+                                {{card}}
+                            </v-list-tile-sub-title>
+                        </v-list-item>
                     </v-list-group>
                     <v-icon v-else class="grey--text">remove</v-icon>
                 </td>

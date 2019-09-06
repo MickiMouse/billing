@@ -504,7 +504,7 @@
         },
         computed: {
             max() {
-                return this.min + 99;
+                return  99999;
             },
             permissions(){
                 return this.details.is_superuser ? 'Admin' : "Reseller"

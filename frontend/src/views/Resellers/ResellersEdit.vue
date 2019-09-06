@@ -63,6 +63,7 @@
                                 <v-list-tile
                                         avatar
                                         @click=""
+                                        v-if="!details.is_superuser"
                                 >
                                     <v-list-tile-avatar>
                                         <v-icon class="grey lighten-1 white--text">branding_watermark</v-icon>
