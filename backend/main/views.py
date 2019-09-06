@@ -1133,6 +1133,9 @@ def pks(arr):
     through = []
     result = []
     b = None
+    if len(arr) == 1:
+        result.append(str(arr[0]))
+        return result
     for i in range(1, len(arr)):
         a, b = arr[i-1], arr[i]
         if abs(b-a) == 1:
