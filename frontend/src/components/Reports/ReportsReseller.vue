@@ -25,7 +25,7 @@
                 <td class="text-xs-left no-wrap">{{ props.item.total }}</td>
                 <td class="text-xs-left no-wrap">
                     <v-list-group
-                            v-if="props.item.cards.length > 0"
+                            v-if="props.item.cards.length > 0 && props.item.cards[0]!=='None'"
                     >
                         <div class="cards-wrapper">
                             <div class="cards-inner">

@@ -85,7 +85,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Price</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.price}}</v-list-tile-sub-title>
+                                    <v-list-tile-sub-title>{{details.price + $store.getters.currency}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                             </v-list-tile>
                             <v-list-tile
@@ -277,8 +277,16 @@
                                 :search="search"
                         >
                             <template slot="items" slot-scope="props">
-                                <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
-                                <td class="text-xs-left no-wrap">{{ props.item.tariff }}</td>
+                                <td class="text-xs-left no-wrap">
+                                    {{ props.item.header }}
+                                    <v-tooltip bottom v-if="props.item.delayed">
+                                        <template v-slot:activator="{ on }">
+                                            <v-icon small v-on="on" color="warning">add_alarm</v-icon>
+                                        </template>
+                                        <span>This package will be removed on the next transaction. </span>
+                                    </v-tooltip>
+                                </td>
+                                <td class="text-xs-left no-wrap">{{ props.item.tariff + $store.getters.currency}}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -298,7 +306,7 @@
                                         </template>
                                         <span>Remove now</span>
                                     </v-tooltip>
-                                    <v-tooltip bottom>
+                                    <v-tooltip bottom v-if="!props.item.delayed">
                                         <template v-slot:activator="{ on }">
                                             <v-btn v-on="on" color="error darken-1" @click="removeCardLater(props.item.pk)" ripple
                                                    icon small dark>
@@ -322,8 +330,16 @@
                                 :search="search"
                         >
                             <template slot="items" slot-scope="props">
-                                <td class="text-xs-left no-wrap">{{ props.item.header }}</td>
-                                <td class="text-xs-left no-wrap">{{ props.item.tariff }}</td>
+                                <td class="text-xs-left no-wrap">
+                                    {{ props.item.header }}
+                                    <v-tooltip bottom v-if="props.item.delayed">
+                                        <template v-slot:activator="{ on }">
+                                            <v-icon small v-on="on" color="warning">add_alarm</v-icon>
+                                        </template>
+                                        <span>This package will be added in the next transaction. </span>
+                                    </v-tooltip>
+                                </td>
+                                <td class="text-xs-left no-wrap">{{ props.item.tariff + $store.getters.currency}}</td>
                                 <td class="text-xs-left no-wrap">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -343,7 +359,7 @@
                                         </template>
                                         <span>Add now</span>
                                     </v-tooltip>
-                                    <v-tooltip bottom>
+                                    <v-tooltip bottom v-if="!props.item.delayed">
                                         <template v-slot:activator="{ on }">
                                             <v-btn v-on="on" @click="addPackageLater(props.item.pk)"
                                                    color="success darken-1" ripple

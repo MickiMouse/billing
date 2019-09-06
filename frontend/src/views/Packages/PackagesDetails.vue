@@ -67,7 +67,7 @@
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
                                     <v-list-tile-title>Tariff</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.tariff}}</v-list-tile-sub-title>
+                                    <v-list-tile-sub-title>{{details.tariff + $store.getters.currency}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                                 <v-list-tile-action>
                                     <v-dialog v-model="dialog" persistent max-width="600px">

@@ -39,7 +39,7 @@
                             <td class="text-xs-left">{{ props.item.pk }}</td>
                             <td class="text-xs-left">{{ props.item.header }}</td>
                             <td class="text-xs-left">{{ props.item.age_limit }}</td>
-                            <td class="text-xs-left">{{ props.item.tariff }}</td>
+                            <td class="text-xs-left">{{ props.item.tariff + $store.getters.currency}}</td>
                             <!--<td class="text-xs-left">{{ props.item.price }}</td>-->
                             <td class="text-xs-left">
                                 <v-tooltip bottom>

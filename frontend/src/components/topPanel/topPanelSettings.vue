@@ -55,6 +55,15 @@
                                 ></v-select>
                             </v-list-tile-content>
                         </v-list-tile>
+                        <v-list-tile avatar>
+                            <v-list-tile-content>
+                                <v-text-field
+                                        label="Currency"
+                                        type="text"
+                                        :rules="[rules.currency,rules.required]"
+                                        v-model="currency"></v-text-field>
+                            </v-list-tile-content>
+                        </v-list-tile>
 
                     </v-list>
                     <v-divider></v-divider>
@@ -83,6 +92,42 @@
                         </v-list-tile>
                     </v-list>
 
+
+                    <v-divider></v-divider>
+                    <v-subheader>Server preferences:</v-subheader>
+                    <v-layout
+                            wrap
+                            px-3
+                    >
+                        <v-flex sm3 pr-3>
+                            <v-text-field
+                                    label="Cards prefix"
+                                    type="number"
+                                    :rules="[rules.rrrCounter,rules.number,rules.required]"
+                                    v-model="sssss"></v-text-field>
+                        </v-flex>
+                        <v-flex sm3 pr-3>
+                            <v-text-field
+                                    label="Max cards"
+                                    type="number"
+                                    :rules="[rules.cardCounter,rules.number,rules.required]"
+                                    v-model="max_cards"></v-text-field>
+                        </v-flex>
+                        <v-flex sm3 pr-3>
+                            <v-text-field
+                                    label="Server ip"
+                                    type="text"
+                                    :rules="[rules.ipAddress,rules.required]"
+                                    v-model="server_ip"></v-text-field>
+                        </v-flex>
+                        <v-flex sm3 pr-3>
+                            <v-text-field
+                                    label="Server port"
+                                    type="number"
+                                    :rules="[rules.portCounter,rules.number,rules.required]"
+                                    v-model="server_port"></v-text-field>
+                        </v-flex>
+                    </v-layout>
                 </v-form>
                 <v-divider></v-divider>
                 <v-list three-line subheader>
@@ -133,7 +178,7 @@
                         wrap
                         px-3
                 >
-                    <v-flex sm3 pr-3  v-for="(period,key) in serverPeriods" :key="key">
+                    <v-flex sm3 pr-3 v-for="(period,key) in serverPeriods" :key="key">
                         <h3 class="subheading">{{period.value}}</h3>
                     </v-flex>
                 </v-layout>
@@ -178,41 +223,7 @@
                         </v-flex>
                     </v-layout>
                 </v-form>
-                <v-divider></v-divider>
-                <v-subheader>Server preferences:</v-subheader>
-                <v-layout
-                        wrap
-                        px-3
-                >
-                    <v-flex sm3 pr-3>
-                        <v-text-field
-                                label="Cards prefix"
-                                type="number"
-                                :rules="[rules.rrrCounter,rules.number,rules.required]"
-                                v-model="sssss"></v-text-field>
-                    </v-flex>
-                    <v-flex sm3 pr-3>
-                        <v-text-field
-                                label="Max cards"
-                                type="number"
-                                :rules="[rules.cardCounter,rules.number,rules.required]"
-                                v-model="max_cards"></v-text-field>
-                    </v-flex>
-                    <v-flex sm3 pr-3>
-                        <v-text-field
-                                label="Server ip"
-                                type="text"
-                                :rules="[rules.ipAddress,rules.required]"
-                                v-model="server_ip"></v-text-field>
-                    </v-flex>
-                    <v-flex sm3 pr-3>
-                        <v-text-field
-                                label="Server port"
-                                type="number"
-                                :rules="[rules.portCounter,rules.number,rules.required]"
-                                v-model="server_port"></v-text-field>
-                    </v-flex>
-                </v-layout>
+
             </v-card>
         </v-dialog>
     </div>
@@ -232,30 +243,32 @@
                 'text': 'Prepayment',
                 'value': 'PREPAYMENT'
             }],
+            currency: '',
             period: [{'text': 'Days', 'value': 'DAYS'}, {'text': 'Weeks', 'value': 'WEEKS'}, {
                 'text': 'Months',
                 'value': 'MONTHS'
             }],
-            updatePeriodsArray:[{},{},{},{},{},{},{},{}],
-            updatePeriodsArrayHack:[{},{},{},{},{},{},{},{}],
+            updatePeriodsArray: [{}, {}, {}, {}, {}, {}, {}, {}],
+            updatePeriodsArrayHack: [{}, {}, {}, {}, {}, {}, {}, {}],
             counterUpdatePeriods: 1,
-            serverPeriods:[],
+            serverPeriods: [],
             kind_payment: '',
             kind_period: '',
             numberOfPeriod: 1,
             max_cards: 0,
             server_ip: '',
-            server_port:'',
+            server_port: '',
             rules: {
                 required: value => !!value || 'Required.',
                 counter: value => value <= 100 || 'Max 100',
+                currency: value => value.length <= 100 || "Max 100 characters",
                 counterUpdatePeriods: value => (value <= 8 && value >= 1) || 'Min 1 Max 8',
                 bouquetsCounter: value => (value <= 128 && value >= 1) || 'Min 1 Max 128',
                 number: value => {
                     const pattern = /^\d+$/;
                     return pattern.test(value) || 'Invalid number.'
                 },
-                rrrCounter: value => (value <= 99999 && value >= 0 && value.length<=5) || 'Min 0 Max 99999',
+                rrrCounter: value => (value <= 99999 && value >= 0 && value.length <= 5) || 'Min 0 Max 99999',
                 cardCounter: value => (value <= 100000 && value >= 0) || 'Min 0 Max 100000',
                 ipAddress: value => {
                     const pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -281,9 +294,9 @@
                     return '0000' + this.sssss
                 } else if (this.sssss < 100 && this.sssss.length < 3) {
                     return '000' + this.sssss
-                }else  if (this.sssss < 1000 && this.sssss.length < 4) {
+                } else if (this.sssss < 1000 && this.sssss.length < 4) {
                     return '00' + this.sssss
-                }else if (this.sssss < 10000 && this.sssss.length < 5) {
+                } else if (this.sssss < 10000 && this.sssss.length < 5) {
                     return '0' + this.sssss
                 } else {
                     return this.sssss.toString()
@@ -299,6 +312,7 @@
                     .then((response) => {
                         if (response.status === 200) {
                             this.kind_payment = response.data.kind_payment;
+                            this.currency = response.data.currency;
                             this.kind_period = response.data.kind_period;
                             this.numberOfPeriod = response.data.quantity;
                             this.sssss = response.data.sssss;
@@ -311,6 +325,10 @@
                             this.$store.commit('set', {
                                 type: 'isPREPAYMENT',
                                 items: this.kind_payment === 'PREPAYMENT'
+                            });
+                            this.$store.commit('set', {
+                                type: 'currency',
+                                items: this.currency
                             });
                         }
                     }).catch((error) => {
@@ -326,6 +344,7 @@
                     this.loading = true;
                     axios.put(`${this.$hostname}/api/change-settings/`, {
                         kind_payment: this.kind_payment,
+                        currency: this.currency,
                         kind_period: this.kind_period,
                         quantity: this.numberOfPeriod,
                         sssss: this.ssssWithZeros,
@@ -371,12 +390,12 @@
                     })
                 }
             },
-            synchronize(){
+            synchronize() {
                 if (!this.$refs.formPeriods.validate()) {
                     this.text = "Fill the periods correctly";
                     this.snackbar = true;
                 } else {
-                    axios.post(`${this.$hostname}/api/synchronize/`,{periods:this.updatePeriodsArrayHack})
+                    axios.post(`${this.$hostname}/api/synchronize/`, {periods: this.updatePeriodsArrayHack})
                         .then((response) => {
                             if (response.status === 200) {
                                 this.getData();
