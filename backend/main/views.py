@@ -284,7 +284,7 @@ class CardCreateView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         pk = Card.objects.aggregate(maxpk=models.Max('pk'))['maxpk']
-        card, created = Card.objects.get_or_create(pk=pk+1)
+        card, created = Card.objects.get_or_create(pk=pk+1, reseller=request.user)
         print(card, created)
         if created:
             log = 'ID CARD: {}; LOG: Created card;'
@@ -305,9 +305,10 @@ class CreateRangeCardView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         start = request.data.get('start')
         stop = request.data.get('stop')
+        print(request.data)
         created_cards = []
         for i in range(start, stop + 1):
-            card, created = Card.objects.get_or_create(pk=i)
+            card, created = Card.objects.get_or_create(pk=i, reseller=request.user)
             if created:
                 created_cards.append(card)
                 log = 'ID CARD: {}; LOG: Created card;'
