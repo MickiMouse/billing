@@ -269,7 +269,7 @@
                 aviableCards: [],
                 rules: {
                     counter: value => value <= 2147483647 || 'Max 2147483647',
-                    rrrCounter: value => (value <= 999 && value >= 0) || 'Min 0 Max 999',
+                    rrrCounter: value => (value <= 999 && value >= 0 && value.length <= 3) || 'Min 0 Max 999',
                     checkAdminZeros: value => ((value !== '000' && value !== '00' && value !== '0') || this.details.is_superuser) || 'Only admins can have prefix "000"',
                     number: value => {
                         const pattern = /^\d+$/;
