@@ -126,7 +126,7 @@ class Card(models.Model):
         return pricePackages + self.reseller.price_card
 
     def status(self):
-        if self.expired_date is None:
+        if self.expired_date is None or self.subscriber is None:
             return 'Inactive'
         elif self.suspend:
             return 'Suspend'
@@ -171,10 +171,11 @@ class Settings(models.Model):
     server_port = models.IntegerField(verbose_name='Port', null=True)
     max_cards = models.IntegerField(verbose_name='Max count cards', default=100000)
     sssss = models.CharField(verbose_name='Prefix system', max_length=5, default='00000')
-
+    currency = models.CharField(verbose_name='Currency', max_length=100, default='$')
     kind_payment = models.CharField(verbose_name='payment', max_length=10, default='PREPAYMENT')
     kind_period = models.CharField(verbose_name='period', max_length=10, default='MONTHS')
     quantity = models.IntegerField(verbose_name='quantity', default=1)
+    email = models.EmailField(verbose_name='Email', null=True, blank=True)
 
 
 class Logs(models.Model):
@@ -259,4 +260,5 @@ from .utilities import (
     send_activation_notification,
     send_request_reset_password,
     continue_subscription,
-    delayed_connect_package,)
+    delayed_connect_package
+)

@@ -1,12 +1,13 @@
 from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
 from django.core.signing import Signer
+from django.core.mail import send_mail
 
 from .models import (
     Packet,
     DelayedRemovePackage,
     DelayedAdditionPackage,
-    ReportFinance,
+    Settings,
     LogsCard,
     LogsSubscriber,
 )
@@ -17,49 +18,49 @@ from .views import logging
 
 
 def send_activation_notification(user):
+    settings = Settings.objects.first()
     host = f'http://localhost:8080/login/{signer.sign(user.email)}'
     context = {'user': user, 'host': host}
     subject = render_to_string('email/activation_letter_subject.txt', context)
     body = render_to_string('email/activation_letter_body.txt', context)
-    user.email_user(subject, body)
+    send_mail(subject, body, settings.email, [user.email])
 
 
 def send_request_reset_password(user):
+    settings = Settings.objects.first()
     host = f'http://localhost:8080/password/{signer.sign(user.email)}'
     context = {'user': user, 'host': host,
                'sign': signer.sign(user.email)}
     subject = render_to_string('email/reset_password_subject.txt', context)
     body = render_to_string('email/reset_password_body.txt', context)
-    user.email_user(subject, body)
+    send_mail(subject, body, settings.email, [user.email])
 
 
 def continue_subscription(card, settings):
-    subscriber = card.subscriber
-    diff = subscriber.balance - card.price()
-    print(diff)
+    if settings.kind_payment == 'VIRTUAL':
+        subscriber = card.subscriber
+        diff = subscriber.balance - card.price()
 
-    if diff < 0:
-        return
+        if diff < 0:
+            return
 
-    subscriber.balance -= card.price()
-    period = settings.quantity
+        subscriber.balance -= card.price()
+        period = settings.quantity
 
-    if settings.kind_period == 'MONTHS':
-        card.expired_date = card.expired_date + relativedelta(months=period)
-    elif settings.kind_period == 'WEEKS':
-        card.expired_date = card.expired_date + relativedelta(weeks=period)
-    else:
-        card.expired_date = card.expired_date + relativedelta(days=period)
+        if settings.kind_period == 'MONTHS':
+            card.expired_date = card.expired_date + relativedelta(months=period)
+        elif settings.kind_period == 'WEEKS':
+            card.expired_date = card.expired_date + relativedelta(weeks=period)
+        else:
+            card.expired_date = card.expired_date + relativedelta(days=period)
 
-    subscriber.save(update_fields=['balance'])
-    card.save(update_fields=['expired_date'])
+        subscriber.save(update_fields=['balance'])
+        card.save(update_fields=['expired_date'])
 
-    log = 'ID SUBSCRIBER: {}; LOG: Payed. Price - {}; Balance - {};'
-    logging(LogsSubscriber, subscriber, log, subscriber.balance, card.price())
-    log = 'ID CARD: {}; LOG: Update expired date {};'
-    logging(LogsCard, card, log, card.expired_date)
-    ReportFinance.objects.create(reseller=card.reseller,
-                                 subscription=card.price())
+        log = 'ID SUBSCRIBER: {}; LOG: Payed. Price - {}; Balance - {};'
+        logging(LogsSubscriber, subscriber, log, subscriber.balance, card.price())
+        log = 'ID CARD: {}; LOG: Update expired date {};'
+        logging(LogsCard, card, log, card.expired_date)
 
 
 def delayed_connect_package(card):

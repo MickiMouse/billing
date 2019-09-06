@@ -111,12 +111,15 @@ class TokenCreateView(APIView):
         password = request.data.get('password')
         user = User.objects.get(username=username)
         token = Token.objects.filter(user=user)
+        settings = Settings.objects.first()
         if token.exists():
-            return Response({'auth_token': token.first().key, 'is_superuser': user.is_superuser})
+            return Response({'auth_token': token.first().key, 'is_superuser': user.is_superuser,
+                             'currency': settings.currency})
         else:
             if user.check_password(password) and user.is_activated:
                 token = Token.objects.create(user=user)
-                return Response({'auth_token': token.key, 'is_superuser': user.is_superuser})
+                return Response({'auth_token': token.key, 'is_superuser': user.is_superuser,
+                                 'currency': settings.currency})
             else:
                 return Response({'errors': 'Invalid data'})
 
@@ -220,6 +223,12 @@ class PackageFilterListView(generics.ListAPIView):
         card = Card.objects.get(pk=kwargs['pk'])
         packages = Packet.objects.all().difference(card.packages.all())
         serializer = self.get_serializer(packages, many=True)
+        delayed = DelayedAdditionPackage.objects.filter(card_id=kwargs['pk'])
+        for i in range(len(serializer.data)):
+            pk = serializer.data[i].get('pk')
+            for d in delayed:
+                if pk == d.package_id:
+                    serializer.data[i].update({'delayed': True})
         return Response(serializer.data)
 
 
@@ -311,6 +320,17 @@ class CardDetailView(generics.RetrieveAPIView):
     permission_classes = [IsOwner, IsAuthenticated]
     serializer_class = CardDetailSerializer
     queryset = Card.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        card = Card.objects.get(pk=kwargs['pk'])
+        serializer = self.get_serializer(card)
+        delayed = DelayedRemovePackage.objects.filter(card_id=kwargs['pk'])
+        packages = serializer.data.get('packages')
+        for package in packages:
+            for d in delayed:
+                if package.get('pk') == d.package_id:
+                    package.update({'delayed': True})
+        return Response(serializer.data)
 
 
 class CardUpdateExpiredView(generics.UpdateAPIView):
@@ -623,16 +643,16 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
         new_balance = int(request.data['balance'])
         user = request.user
 
-        absolute = user.balance + abs(user.credit)
-        diff = absolute - new_balance
-        if diff >= 0:
-            subscriber.balance += new_balance
-            user.balance -= new_balance
+        difference = new_balance - subscriber.balance
+
+        if difference >= 0:
+            user.balance -= difference
             ReportFinance.objects.create(spend_money=new_balance,
                                          reseller=user)
         else:
-            return Response({'detail': 'Your balance cannot be less your credit'},
-                            status=HTTP_400_BAD_REQUEST)
+            user.balance += difference
+
+        subscriber.balance = new_balance
         user.save(update_fields=['balance'])
         subscriber.save(update_fields=['balance'])
         log = 'ID SUBSCRIBER: {}; LOG: Edit balance. New value - {};'
@@ -762,6 +782,7 @@ class ChangeSettingsView(generics.UpdateAPIView):
         settings.max_cards = request.data.get('max_cards')
         settings.server_port = request.data.get('server_port')
         settings.server_ip = request.data.get('server_ip')
+        settings.currency = request.data.get('currency')
         settings.save()
         serializer = self.get_serializer(instance=settings)
         return Response(serializer.data)
@@ -951,7 +972,32 @@ class Dashboard(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response({'message': 'OK'})
+        dates = []
+        cards_count = []
+        subscribers_count = []
+        dates_dict = Subscriber.objects.values('created_at__day',
+                                               'created_at__month',
+                                               'created_at__year').distinct()
+
+        for date in dates_dict:
+            d = datetime(date['created_at__year'], date['created_at__month'], date['created_at__day'] + 1)
+            if d not in dates:
+                dates.append(d)
+
+        for date in dates:
+            cards = Subscriber.objects.filter(
+                Q(created_at__lt=date)).aggregate(Count('cards'))['cards__count']
+            cards_count.append(cards)
+
+            subscribers = Subscriber.objects.filter(
+                Q(created_at__lt=date)).count()
+            subscribers_count.append(subscribers)
+
+        dates = ['T'.join(str(date).split()) for date in dates]
+
+        result = {'x': dates, 'cards': cards_count,
+                  'subs': subscribers_count}
+        return Response(result)
 
 
 class ReportSubsView(APIView):
@@ -1073,9 +1119,37 @@ class ReportCardsOfResellerView(APIView):
         totalCards = Card.objects.count()
         for user in User.objects.all():
             cards = [card.pk for card in user.cards.all()]
+            cards.sort()
+            cards = pks(cards)
             objects.append({'name': user.username,
                             'total': user.cards.count(),
                             'cards': cards})
         result['objects'] = objects
         result['total'] = totalCards
         return Response(result)
+
+
+def pks(arr):
+    through = []
+    result = []
+    b = None
+    for i in range(1, len(arr)):
+        a, b = arr[i-1], arr[i]
+        if abs(b-a) == 1:
+            through.append(a)
+        else:
+            through.append(a)
+            if len(through) == 1:
+                result.append(str(a))
+                through.clear()
+            else:
+                result.append(f'{min(through)}...{max(through)}')
+                through.clear()
+    else:
+        through.append(b)
+        if len(through) == 1:
+            result.append(str(b))
+            through.clear()
+        else:
+            result.append(f'{min(through)}...{max(through)}')
+    return result
