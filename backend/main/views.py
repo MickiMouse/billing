@@ -586,7 +586,7 @@ class SubscriberUpdateCardsView(APIView):
             elif settings.kind_period == 'WEEKS':
                 card.expired_date = datetime.now() + relativedelta(weeks=period)
             elif settings.kind_period == 'DAYS':
-                card.expired_date = datetime.now() + relativedelta(minutes=period)
+                card.expired_date = datetime.now() + relativedelta(days=period)
             card.save(update_fields=['expired_date'])
             log = 'ID CARD: {}; LOG: Update expired date - {};'
             logging(LogsCard, card, log, card.expired_date)
