@@ -420,8 +420,6 @@ class CardForceUpdatePackageView(generics.UpdateAPIView):
 
         data.append(package)
 
-        card.packages.set(data)
-        card.save()
         if card.subscriber:
             if settings.kind_payment == 'VIRTUAL':
                 subscriber = card.subscriber
@@ -429,9 +427,15 @@ class CardForceUpdatePackageView(generics.UpdateAPIView):
                 if subscriber.balance - package.tariff >= 0:
                     subscriber.balance -= package.tariff
                     subscriber.save()
+                    card.packages.set(data)
+                    card.save()
                 else:
                     return Response({'errors': 'Not enough money in the account'},
                                     status=HTTP_400_BAD_REQUEST)
+            else:
+                card.packages.set(data)
+                card.save()
+
         log = 'ID CARD: {}; LOG: Add package {};'
         logging(LogsCard, card, log, package.header)
         serializer = self.get_serializer(instance=card)
