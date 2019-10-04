@@ -315,7 +315,7 @@ class CreateRangeCardView(generics.ListCreateAPIView):
                 created_cards.append(card)
                 log = 'ID CARD: {}; LOG: Created card;'
                 logging(LogsCard, card, log)
-                logging(LogsReseller, card, log)
+                logging(LogsReseller, request.user, log)
         serializer = self.get_serializer(created_cards, many=True)
         return Response(serializer.data, status=HTTP_201_CREATED)
 
@@ -366,7 +366,7 @@ class CardUpdateExpiredView(generics.UpdateAPIView):
         card.save(update_fields=['expired_date'])
         log = 'ID CARD: {}; LOG: Update expired date {};'
         logging(LogsCard, card, log, card.expired_date)
-        logging(LogsReseller, card, log, card.expired_date)
+        logging(LogsReseller, request.user, log, card.expired_date)
         serializer = self.get_serializer(instance=card)
         return Response(serializer.data)
 
@@ -559,7 +559,7 @@ class SubscriberDeleteView(generics.DestroyAPIView):
         subscriber.cards.clear()
         log = 'ID SUBSCRIBER: {}; LOG: Deleted;'
         logging(LogsSubscriber, subscriber, log)
-        logging(LogsReseller, subscriber, log)
+        logging(LogsReseller, request.user, log)
         subscriber.logs.clear()
         subscriber.delete()
         return Response(data={'message': 'Deleted'},
@@ -644,7 +644,7 @@ class SubscriberDeleteCardView(APIView):
         log = 'ID CARD: {}; LOG: Reseller ({}, {}, {}) pick up the card from subscriber ({}, {}, {});'
         logging(LogsCard, querysetcard.first(), log, reseller.id, reseller.username, reseller.email,
                 subscriber.id, subscriber.first_name, subscriber.last_name)
-        logging(LogsReseller, querysetcard.first(), log, reseller.id, reseller.username, reseller.email,
+        logging(LogsReseller, request.user, log, reseller.id, reseller.username, reseller.email,
                 subscriber.id, subscriber.first_name, subscriber.last_name)
         serializer = SubscriberEditCardsSerializer(subscriber)
         return Response(serializer.data)
@@ -674,7 +674,7 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
         subscriber.save(update_fields=['balance'])
         log = 'ID SUBSCRIBER: {}; LOG: Edit balance. New value - {};'
         logging(LogsSubscriber, subscriber, log, subscriber.balance)
-        logging(LogsReseller, subscriber, log, subscriber.balance)
+        logging(LogsReseller, user, log, subscriber.balance)
         serializer = self.get_serializer(instance=subscriber)
         return Response(serializer.data)
 
@@ -871,7 +871,7 @@ class TieCardsToResellerView(generics.UpdateAPIView):
             tied_cards.append(card)
             log = 'ID CARD: {}; LOG: Tie card to reseller ({}, {}, {})'
             logging(LogsCard, card, log, user.id, user.username, user.email)
-            logging(LogsReseller, card, log, user.id, user.username, user.email)
+            logging(LogsReseller, user, log, user.id, user.username, user.email)
         user.cards.set(tied_cards)
         serializer = self.get_serializer(user)
         return Response(serializer.data)
@@ -891,7 +891,7 @@ class PickUpCardsFromReseller(generics.UpdateAPIView):
         card.save()
         log = 'ID CARD: {}; Pick up card from reseller ({}, {}, {})'
         logging(LogsCard, card, log, user.id, user.username, user.email)
-        logging(LogsReseller, card, log, user.id, user.username, user.email)
+        logging(LogsReseller, user, log, user.id, user.username, user.email)
         serializer = self.get_serializer(instance=user)
         return Response(serializer.data)
 
@@ -921,7 +921,7 @@ class ResellerTieOneCard(generics.UpdateAPIView):
         user.save()
         serializer = self.get_serializer(user)
         log = 'ID CARD: {}; Tie card to reseller ({}, {}, {})'
-        logging(LogsReseller, card, log, user.id, user.username, user.email)
+        logging(LogsReseller, user, log, user.id, user.username, user.email)
         return Response(serializer.data)
 
 
@@ -937,7 +937,7 @@ class ResellerPickUpOneCard(generics.UpdateAPIView):
         card.save(update_fields=['reseller'])
         serializer = self.get_serializer(user)
         log = 'ID CARD: {}; Pick up card from reseller ({}, {}, {})'
-        logging(LogsReseller, card, log, user.id, user.username, user.email)
+        logging(LogsReseller, user, log, user.id, user.username, user.email)
         return Response(serializer.data)
 
 
