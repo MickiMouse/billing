@@ -114,12 +114,12 @@ class TokenCreateView(APIView):
         settings = Settings.objects.first()
         if token.exists():
             return Response({'auth_token': token.first().key, 'is_superuser': user.is_superuser,
-                             'currency': settings.currency, 'balance': user.balance})
+                             'currency': settings.currency})
         else:
             if user.check_password(password) and user.is_activated:
                 token = Token.objects.create(user=user)
                 return Response({'auth_token': token.key, 'is_superuser': user.is_superuser,
-                                 'currency': settings.currency, 'balance': user.balance})
+                                 'currency': settings.currency})
             else:
                 return Response({'errors': 'Invalid data'})
 
