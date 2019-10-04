@@ -98,6 +98,12 @@ class CardSerializer(serializers.ModelSerializer):
                   'price')
 
 
+class DestroyCard(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ('pk',)
+
+
 class LogsResellerSerializer(serializers.ModelSerializer):
     class Meta:
         model = LogsReseller

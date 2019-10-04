@@ -66,7 +66,7 @@ from .serializer import (
     ResellerMakeAdminSerializer,
     SynchrFormsSerializer,
     LogsSubscriberSerializer,
-)
+    DestroyCard)
 
 from .api import (
     Command,
@@ -475,17 +475,18 @@ class CardForceRemovePackageView(generics.UpdateAPIView):
 class CardDeleteView(generics.DestroyAPIView):
     queryset = Card.objects.all()
     permission_classes = [IsAdminUser]
-    serializer_class = CardSerializer
+    serializer_class = DestroyCard
 
-    def delete(self, request, *args, **kwargs):
-        card = Card.objects.get(pk=kwargs['pk'])
+    def destroy(self, request, *args, **kwargs):
+        pk = kwargs['pk']
+        card = Card.objects.get(pk=pk)
         if card.status() == 'Active' or card.subscriber is not None:
             return Response({'errors': 'Cannot delete this card'},
                             status=HTTP_400_BAD_REQUEST)
         if card.delete_date() > datetime.now():
             log = 'ID CARD: {}; LOG: Remove card;'
             logging(LogsCard, card, log)
-            logging(LogsReseller, card, log)
+            logging(LogsReseller, request.user, log)
             card.logs.clear()
             card.delete()
             serializer = self.get_serializer(instance=card)
