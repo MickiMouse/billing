@@ -17,6 +17,7 @@ from rest_framework.permissions import (
     IsAdminUser,
     IsAuthenticated,
 )
+from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
 
 from .permission import IsOwner
@@ -66,7 +67,7 @@ from .serializer import (
     ResellerMakeAdminSerializer,
     SynchrFormsSerializer,
     LogsSubscriberSerializer,
-    DestroyCard)
+    DestroyCard, BalanceReseller)
 
 from .api import (
     Command,
@@ -1179,3 +1180,16 @@ def pks(arr):
         else:
             result.append(f'{min(through)}...{max(through)}')
     return result
+
+
+@api_view(['GET'])
+def balance(request):
+    if request.method == 'GET':
+        return Response({'balance': request.user.balance})
+
+
+class BalanceUser(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        return Response({'balance': request.user.balance})

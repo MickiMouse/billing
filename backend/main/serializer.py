@@ -151,6 +151,12 @@ class ResellerUpdateSerializer(serializers.ModelSerializer):
                   'is_superuser')
 
 
+class BalanceReseller(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('balance',)
+
+
 class TokenSerializer(serializers.ModelSerializer):
     """Serializer for Token"""
 

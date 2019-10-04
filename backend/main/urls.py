@@ -57,7 +57,7 @@ from .views import (
     ReportLogsView,
     ReportFinanceView,
     ReportCardsOfResellerView,
-)
+    balance, BalanceUser)
 
 app_name = 'main'
 
@@ -122,4 +122,5 @@ urlpatterns = [
     path('is-permission-editable/<int:pk>/', ChangeSelfPermission.as_view()),
     path('synchronize/', SynchronizeView.as_view()),
     path('dashboard/', Dashboard.as_view()),
+    path('balance/', BalanceUser.as_view()),
 ]
