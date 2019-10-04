@@ -86,16 +86,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'main.Reseller'
 
-EMAIL_USE_TLS = True
-
-EMAIL_HOST = 'smtp.gmail.com'
-
-EMAIL_HOST_USER = 'dpashnev175@gmail.com'
-
-EMAIL_HOST_PASSWORD = 'vfhufhbnf13200014'
-
-EMAIL_PORT = 587
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -134,3 +124,8 @@ SERVER_PSWD = ''
 CRONJOBS = [
     ('*/1 * * * *', 'main.cron.my_scheduled_job'),
 ]
+
+try:
+    from backend.email_config import *
+except ImportError:
+    pass
