@@ -289,7 +289,7 @@ class CardCreateView(generics.CreateAPIView):
         if created:
             log = 'ID CARD: {}; LOG: Created card;'
             logging(LogsCard, card, log)
-            logging(LogsReseller, card, log)
+            logging(LogsReseller, request.user, log)
         serializer = self.get_serializer(instance=card)
         return Response(serializer.data, status=HTTP_201_CREATED)
 
