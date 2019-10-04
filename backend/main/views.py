@@ -479,7 +479,7 @@ class CardDeleteView(generics.DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         card = Card.objects.get(pk=kwargs['pk'])
-        if card.status() == 'Active' or card.subscriber:
+        if card.status() == 'Active' or card.subscriber is not None:
             return Response({'errors': 'Cannot delete this card'},
                             status=HTTP_400_BAD_REQUEST)
         if card.delete_date() > datetime.now():
