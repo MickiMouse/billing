@@ -29,7 +29,7 @@ def send_activation_notification(user):
 
 def send_request_reset_password(user):
     settings = Settings.objects.first()
-    host = f'http://{MAIN_URL}/login/{signer.sign(user.email)}'
+    host = f'http://{MAIN_URL}/password/{signer.sign(user.email)}'
     context = {'user': user, 'host': host,
                'sign': signer.sign(user.email)}
     subject = render_to_string('email/reset_password_subject.txt', context)
