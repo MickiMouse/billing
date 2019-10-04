@@ -2,6 +2,7 @@ from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
 from django.core.signing import Signer
 from django.core.mail import send_mail
+from backend.settings import ALLOWED_HOSTS
 
 from .models import (
     Packet,
@@ -19,7 +20,7 @@ from .views import logging
 
 def send_activation_notification(user):
     settings = Settings.objects.first()
-    host = f'http://localhost:8080/login/{signer.sign(user.email)}'
+    host = f'http://157.230.98.28/login/{signer.sign(user.email)}'
     context = {'user': user, 'host': host}
     subject = render_to_string('email/activation_letter_subject.txt', context)
     body = render_to_string('email/activation_letter_body.txt', context)
@@ -28,7 +29,7 @@ def send_activation_notification(user):
 
 def send_request_reset_password(user):
     settings = Settings.objects.first()
-    host = f'http://localhost:8080/password/{signer.sign(user.email)}'
+    host = f'http://157.230.98.28/login/{signer.sign(user.email)}'
     context = {'user': user, 'host': host,
                'sign': signer.sign(user.email)}
     subject = render_to_string('email/reset_password_subject.txt', context)
