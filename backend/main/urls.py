@@ -57,7 +57,8 @@ from .views import (
     ReportLogsView,
     ReportFinanceView,
     ReportCardsOfResellerView,
-    balance, BalanceUser)
+    ResellerEditBalanceView,
+    BalanceUser)
 
 app_name = 'main'
 
@@ -67,6 +68,7 @@ urlpatterns = [
     path('resellers/pickup/cards/<int:pk>/', PickUpCardsFromReseller.as_view()),
     path('resellers/tie/<int:pk>/', ResellerTieOneCard.as_view()),
     path('resellers/pickup/<int:pk>/', ResellerPickUpOneCard.as_view()),
+    path('resellers/edit/balance/<int:pk>/', ResellerEditBalanceView.as_view()),
     path('resellers/edit/<int:pk>/', ResellerEditView.as_view()),
     path('resellers/delete/<int:pk>/', ResellerDeleteView.as_view()),
     path('resellers/<int:pk>/', ResellerDetailView.as_view()),

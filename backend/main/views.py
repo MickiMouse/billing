@@ -67,7 +67,7 @@ from .serializer import (
     ResellerMakeAdminSerializer,
     SynchrFormsSerializer,
     LogsSubscriberSerializer,
-    DestroyCard, BalanceReseller)
+    DestroyCard, BalanceReseller, ResellerUpdateBalanceSerializer)
 
 from .api import (
     Command,
@@ -200,6 +200,12 @@ class ResellerEditView(generics.UpdateAPIView):
     queryset = User.objects.all()
     permission_classes = [IsAdminUser]
     serializer_class = ResellerUpdateSerializer
+
+
+class ResellerEditBalanceView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = ResellerUpdateBalanceSerializer
 
 
 class ResellerDeleteView(generics.DestroyAPIView):
