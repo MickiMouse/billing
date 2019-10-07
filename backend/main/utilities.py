@@ -20,7 +20,7 @@ from .views import logging
 
 def send_activation_notification(user):
     settings = Settings.objects.first()
-    host = f'http://{MAIN_URL}/register_activate/{signer.sign(user.email)}/'
+    host = f'http://{MAIN_URL}/login/{signer.sign(user.email)}/'
     context = {'user': user, 'host': host}
     subject = render_to_string('email/activation_letter_subject.txt', context)
     body = render_to_string('email/activation_letter_body.txt', context)
