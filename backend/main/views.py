@@ -777,7 +777,7 @@ class SettingsView(generics.RetrieveAPIView):
         result.update(serializer.data)
         array_times = []
         for time in SynchronizeForms.objects.all():
-            array_times.append({'value': time.date.time().strftime('%H:%M')})
+            array_times.append({'value': time.date.strftime('%H:%M')})
         length = 8 - len(array_times)
         for i in range(length):
             array_times.append({})
