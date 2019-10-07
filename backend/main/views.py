@@ -9,7 +9,8 @@ from rest_framework import generics
 from rest_framework.status import (HTTP_200_OK,
                                    HTTP_201_CREATED,
                                    HTTP_400_BAD_REQUEST,
-                                   HTTP_204_NO_CONTENT)
+                                   HTTP_204_NO_CONTENT,
+                                   HTTP_401_UNAUTHORIZED)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import (
@@ -115,6 +116,8 @@ class TokenCreateView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         user = User.objects.get(username=username)
+        if not user.is_confirm:
+            return Response(status=HTTP_401_UNAUTHORIZED)
         token = Token.objects.filter(user=user)
         settings = Settings.objects.first()
         if token.exists():
@@ -188,6 +191,12 @@ class ResellerConfirmView(generics.UpdateAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = ResellerConfirmSerializer
     queryset = User.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        user = User.objects.get(pk=kwargs['pk'])
+        user.is_confirm = True
+        user.save()
+        return Response(status=HTTP_200_OK)
 
 
 class ResellersUnconfirmed(generics.ListAPIView):

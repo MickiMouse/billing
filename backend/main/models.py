@@ -156,7 +156,7 @@ class Subscriber(models.Model):
     address = models.CharField(verbose_name='address', max_length=100, blank=True, null=True)
     telephone = models.CharField(verbose_name='telephone', max_length=30, blank=True, null=True)
     email = models.EmailField(verbose_name='email', blank=True, null=True)
-    balance = models.IntegerField(verbose_name='balance', default=0)
+    balance = models.FloatField(verbose_name='balance', default=0)
     reseller = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=get_admin)
     created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
 
@@ -206,7 +206,7 @@ class LogsSubscriber(Logs):
 
 
 class LogsReseller(Logs):
-    reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='logs',
+    reseller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logs',
                                  null=True, blank=True)
 
     class Meta(Logs.Meta):
