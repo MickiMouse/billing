@@ -46,13 +46,14 @@ class Reseller(AbstractUser):
     address = models.CharField(verbose_name='address', max_length=100, blank=True)
     telephone = models.CharField(verbose_name='telephone', max_length=30, blank=True)
     zone = models.CharField(verbose_name='zone', max_length=50, blank=True)
-    balance = models.IntegerField(verbose_name='Balance', default=0)
-    credit = models.IntegerField(verbose_name='Credit', default=0)
-    price_card = models.IntegerField(verbose_name='Price', default=0)
+    balance = models.FloatField(verbose_name='Balance', default=0)
+    credit = models.FloatField(verbose_name='Credit', default=0)
+    price_card = models.FloatField(verbose_name='Price', default=0)
     comment = models.CharField(verbose_name='Comment', max_length=100, blank=True)
     is_activated = models.BooleanField(verbose_name='Activated', default=True,
                                        db_index=True)
     rrr = models.CharField(verbose_name='Prefix', max_length=3, blank=True)
+    is_confirm = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username or self.email
@@ -86,7 +87,7 @@ class Bouquet(models.Model):
 
 class Packet(models.Model):
     header = models.CharField(verbose_name='header', max_length=50, blank=True, null=True)
-    tariff = models.IntegerField(verbose_name='Tariff of one period', default=0, blank=True, null=True)
+    tariff = models.FloatField(verbose_name='Tariff of one period', default=0, blank=True, null=True)
     cards = models.ManyToManyField('Card', blank=True, null=True,
                                    related_name='packages')
 

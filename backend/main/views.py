@@ -67,7 +67,11 @@ from .serializer import (
     ResellerMakeAdminSerializer,
     SynchrFormsSerializer,
     LogsSubscriberSerializer,
-    DestroyCard, BalanceReseller, ResellerUpdateBalanceSerializer)
+    DestroyCard,
+    ResellerUpdateBalanceSerializer,
+    ResellerConfirmSerializer,
+    ResellersTableSerializer,
+)
 
 from .api import (
     Command,
@@ -158,6 +162,7 @@ class ResellerActivateAPIView(generics.GenericAPIView):
         else:
             user.is_active = True
             user.is_activated = True
+            user.is_confirm = False
             user.save()
             log = 'ID RESELLER: {}; LOG: Registered;'
             logging(LogsReseller, user, log)
@@ -171,6 +176,18 @@ from .utilities import signer
 class ResellerListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
     serializer_class = ResellerListSerializer
+    queryset = User.objects.all()
+
+
+class ResellerConfirmView(generics.UpdateAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = ResellerConfirmSerializer
+    queryset = User.objects.all()
+
+
+class ResellersUnconfirmed(generics.ListAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = ResellersTableSerializer
     queryset = User.objects.all()
 
 

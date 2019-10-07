@@ -157,6 +157,20 @@ class ResellerUpdateBalanceSerializer(serializers.ModelSerializer):
         fields = ('balance',)
 
 
+class ResellerConfirmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('is_confirm',)
+
+
+class ResellersTableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk',
+                  'email',
+                  'username')
+
+
 class BalanceReseller(serializers.ModelSerializer):
     class Meta:
         model = User

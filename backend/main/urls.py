@@ -58,11 +58,16 @@ from .views import (
     ReportFinanceView,
     ReportCardsOfResellerView,
     ResellerEditBalanceView,
-    BalanceUser)
+    BalanceUser,
+    ResellerConfirmView,
+    ResellersUnconfirmed,
+)
 
 app_name = 'main'
 
 urlpatterns = [
+    path('resellersTable/', ResellersUnconfirmed.as_view()),
+    path('resellers/confirm/', ResellerConfirmView.as_view()),
     path('resellers/filter-cards/', ResellerFilterCards.as_view()),
     path('resellers/tie/cards/<int:pk>/', TieCardsToResellerView.as_view()),
     path('resellers/pickup/cards/<int:pk>/', PickUpCardsFromReseller.as_view()),
