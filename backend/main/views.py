@@ -178,6 +178,11 @@ class ResellerListView(generics.ListAPIView):
     serializer_class = ResellerListSerializer
     queryset = User.objects.all()
 
+    def get(self, request, *args, **kwargs):
+        users = User.objects.filter(is_confirm=True)
+        serializer = self.get_serializer(users, many=True)
+        return Response(serializer.data)
+
 
 class ResellerConfirmView(generics.UpdateAPIView):
     permission_classes = [IsAdminUser]
