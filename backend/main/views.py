@@ -196,7 +196,7 @@ class ResellersUnconfirmed(generics.ListAPIView):
     queryset = User.objects.all()
 
     def get(self, request, *args, **kwargs):
-        users = User.objects.filter(is_confirm=True)
+        users = User.objects.filter(is_confirm=False)
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
 
