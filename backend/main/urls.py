@@ -60,8 +60,7 @@ from .views import (
     ResellerEditBalanceView,
     BalanceUser,
     ResellerConfirmView,
-    ResellersUnconfirmed,
-)
+    ResellersUnconfirmed)
 
 app_name = 'main'
 
