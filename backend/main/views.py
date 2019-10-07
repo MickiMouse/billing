@@ -976,16 +976,15 @@ class SynchronizeView(APIView):
 
     def post(self, request):
         periods = request.data.get('periods')
-        print(periods)
-        date = str(datetime.now().date()).split('-')
-        date = [int(n) for n in date]
+        # date = str(datetime.now().date()).split('-')
+        # date = [int(n) for n in date]
         for sync in SynchronizeForms.objects.all():
             sync.delete()
         for val in periods:
             if val is not None and 'value' in val:
                 time = val['value'].split(':')
                 time = [int(n) for n in time]
-                result = datetime(*date, *time)
+                result = datetime(*time)
                 SynchronizeForms.objects.create(date=result)
         objs = SynchronizeForms.objects.all()
         serializer = SynchrFormsSerializer(objs, many=True)

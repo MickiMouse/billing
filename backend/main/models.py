@@ -249,7 +249,7 @@ class ReportFinance(models.Model):
 
 
 class SynchronizeForms(models.Model):
-    date = models.DateTimeField(verbose_name='Time to synchronize', null=True)
+    date = models.TimeField(verbose_name='Time to synchronize', null=True)
     status = models.BooleanField(verbose_name='Completed?', default=False)
 
     class Meta:

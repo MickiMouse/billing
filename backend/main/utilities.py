@@ -40,10 +40,6 @@ def send_request_reset_password(user):
 def continue_subscription(card, settings):
     if settings.kind_payment == 'VIRTUAL':
         subscriber = card.subscriber
-        diff = subscriber.balance - card.price()
-
-        if diff < 0:
-            return
 
         subscriber.balance -= card.price()
         period = settings.quantity
@@ -55,8 +51,8 @@ def continue_subscription(card, settings):
         else:
             card.expired_date = card.expired_date + relativedelta(days=period)
 
-        subscriber.save(update_fields=['balance'])
-        card.save(update_fields=['expired_date'])
+        subscriber.save()
+        card.save()
 
         log = 'ID SUBSCRIBER: {}; LOG: Payed. Price - {}; Balance - {};'
         logging(LogsSubscriber, subscriber, log, subscriber.balance, card.price())
