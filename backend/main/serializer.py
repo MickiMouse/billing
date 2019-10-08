@@ -333,7 +333,8 @@ class SubscriberCreateSerializer(serializers.ModelSerializer):
                   'last_name',
                   'email',
                   'address',
-                  'telephone')
+                  'telephone',
+                  'balance')
 
 
 class SubscriberEditCardsSerializer(serializers.ModelSerializer):
