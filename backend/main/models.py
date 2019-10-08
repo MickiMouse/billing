@@ -123,7 +123,7 @@ class Card(models.Model):
             pricePackages = self.packages.aggregate(
                 price=models.Sum('tariff'))['price']
         else:
-            pricePackages = 0
+            pricePackages = 0.0
         return pricePackages + self.reseller.price_card
 
     def status(self):
@@ -230,7 +230,7 @@ class DelayedRemovePackage(models.Model):
 
 
 class ReportSubscription(models.Model):
-    subscription = models.IntegerField(verbose_name='Count sub', db_index=True, default=0)
+    subscription = models.FloatField(verbose_name='Count sub', db_index=True, default=0)
     created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
     reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='reports')
 
@@ -240,7 +240,7 @@ class ReportSubscription(models.Model):
 
 
 class ReportFinance(models.Model):
-    spend_money = models.IntegerField(verbose_name='Money', db_index=True, default=0)
+    spend_money = models.FloatField(verbose_name='Money', db_index=True, default=0)
     created_at = models.DateTimeField(verbose_name='Created', auto_now_add=True)
     reseller = models.ForeignKey(User, on_delete=models.PROTECT, related_name='reports_finance')
 
