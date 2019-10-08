@@ -699,7 +699,7 @@ class SubscriberUpdateBalanceView(generics.UpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         subscriber = Subscriber.objects.get(pk=kwargs['pk'])
-        new_balance = int(request.data['balance'])
+        new_balance = request.data['balance']
         user = request.user
 
         difference = new_balance - subscriber.balance
