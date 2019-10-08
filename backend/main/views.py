@@ -564,7 +564,7 @@ class SubscriberDetailView(generics.RetrieveAPIView):
 
 class SubscriberEditView(generics.UpdateAPIView):
     queryset = Subscriber.objects.all()
-    permission_classes = [IsOwner, IsAuthenticated]
+    permission_classes = [IsOwner]
     serializer_class = SubscriberCreateSerializer
 
 
