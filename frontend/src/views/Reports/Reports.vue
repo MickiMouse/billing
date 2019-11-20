@@ -5,12 +5,12 @@
                 :timeout="timeout"
                 top
         >
-            {{ text }}
+            {{ t(text) }}
             <v-btn
                     flat
                     @click="snackbar = false"
             >
-                Close
+                {{t('Close')}}
             </v-btn>
         </v-snackbar>
         <v-container fluid id="main-container" grid-list-md>
@@ -33,7 +33,7 @@
                                         <template v-slot:activator="{ on }">
                                             <v-text-field
                                                     v-model="dateLt"
-                                                    label="From"
+                                                    :label="t('From')"
                                                     hint="YYYY-MM-DD format"
                                                     persistent-hint
                                                     prepend-icon="event"
@@ -58,7 +58,7 @@
                                         <template v-slot:activator="{ on }">
                                             <v-text-field
                                                     v-model="dateRt"
-                                                    label="To"
+                                                    :label="t('To')"
                                                     hint="YYYY-MM-DD format"
                                                     persistent-hint
                                                     prepend-icon="event"
@@ -78,39 +78,39 @@
                     <v-tabs grow @change="tabValue != 'report-logs' ? getData() : ''" v-model="tabValue">
                         <v-tab href="#report-subs">
                             <v-icon left>mdi-account</v-icon>
-                            Subscribers
+                            {{t('Subscribers')}}
                         </v-tab>
                         <v-tab href="#report-card">
                             <v-icon left>mdi-lock</v-icon>
-                            Cards
+                            {{t('Cards')}}
                         </v-tab>
                         <v-tab href="#report-finance">
                             <v-icon left>mdi-access-point</v-icon>
-                           Finance
+                           {{t('Finance')}}
                         </v-tab>
                         <v-tab href="#report-logs">
                             <v-icon left>mdi-access-point</v-icon>
-                            Logs
+                            {{t('Logs')}}
                         </v-tab>
                         <v-tab href="#report-cards-reseller">
                             <v-icon left>mdi-access-point</v-icon>
-                            Reseller cards
+                            {{t('Reseller cards')}}
                         </v-tab>
                         <v-tab-item value="report-subs">
-                            <reports-subscribers :data="details.objects" :loading="loading" :total="details.total" :kind="'subscribers'"/>
+                            <reports-subscribers :data="details.objects" :loading="loading" :total="details.total" :kind="t('subscribers')"/>
                         </v-tab-item>
                         <v-tab-item value="report-card">
-                            <reports-subscribers :data="details.objects" :loading="loading" :total="details.total" :kind="'cards of subscribers'"/>
+                            <reports-subscribers :data="details.objects" :loading="loading" :total="details.total" :kind="t('cards of subscribers')"/>
                         </v-tab-item>
                         <v-tab-item value="report-finance">
-                            <reports-subscribers :data="details.objects" :loading="loading" :total="details.total" :kind="'finance'"/>
+                            <reports-subscribers :data="details.objects" :loading="loading" :total="details.total" :kind="t('finance')"/>
 
                         </v-tab-item>
                         <v-tab-item value="report-logs">
                             <reports-subscriber-logs :dateLt="dateLt" :dateRt="dateRt"/>
                         </v-tab-item>
                         <v-tab-item value="report-cards-reseller">
-                            <reports-reseller :data="details.objects" :loading="loading" :total="details.total" :kind="'cards'"/>
+                            <reports-reseller :data="details.objects" :loading="loading" :total="details.total" :kind="t('cards')"/>
 
                         </v-tab-item>
                     </v-tabs>
@@ -148,24 +148,24 @@
             snackbar: false,
             text: 'Oops... Something went wrong',
             timeout: 5000,
-            headersLogs: [
-                {text: 'Date', value: 'date'},
-                {
-                    text: 'Header',
-                    align: 'left',
-                    //  sortable: false,
-                    value: 'log',
-                },
-
-                // {text: 'Calories', value: 'calories'},
-            ],
+            // headersLogs: [
+            //     {text: 'Date', value: 'date'},
+            //     {
+            //         text: 'Header',
+            //         align: 'left',
+            //         //  sortable: false,
+            //         value: 'log',
+            //     },
+            //
+            //     // {text: 'Calories', value: 'calories'},
+            // ],
             rules: {
-                required: value => !!value || 'Required.',
-                username: value => (value.length >= 4 && value.length <= 150) || 'Username between the 4 - 150 characters',
-                counter: value => value.length >= 8 || 'Min 8 characters',
+                required: value => !!value || this.$translate.locale['Required.'],
+                username: value => (value.length >= 4 && value.length <= 150) ||this.$translate.locale[ 'Username between the 4 - 150 characters'],
+                counter: value => value.length >= 8 || this.$translate.locale['Min 8 characters'],
                 email: value => {
                     const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                    return pattern.test(value) || 'Invalid e-mail.'
+                    return pattern.test(value) || this.$translate.locale['Invalid e-mail.']
                 },
             },
         }),

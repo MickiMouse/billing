@@ -5,12 +5,12 @@
                 :timeout="timeout"
                 top
         >
-            {{ text }}
+            {{ t(text) }}
             <v-btn
                     flat
                     @click="snackbar = false"
             >
-                Close
+                {{t('Close')}}
             </v-btn>
         </v-snackbar>
         <top-panel-menu/>
@@ -21,16 +21,22 @@
                 <span class="font-weight-light">Ripple</span>
                 <span class="font-weight-thin">{{this.$route.meta.title}}</span>
             </v-toolbar-title>
+
             <v-spacer/>
             <!--<v-toolbar-items>-->
-               <!---->
+            <!---->
             <!--</v-toolbar-items>-->
+            <v-spacer/>
+            <v-toolbar-title class="headline text-uppercase">
+                <span class="font-weight-light">{{formatBalance}}</span>
+            </v-toolbar-title>
             <top-panel-settings v-if="$session.get('isSuperuser')"/>
             <v-btn text
                    flat
                    color="secondary"
                    @click="logout"
-            >Logout
+            >
+                {{t('Logout')}}
             </v-btn>
             <template v-slot:extension>
                 <v-progress-linear slot="extension" v-model="loadingPercent" v-show="loading" :indeterminate="false"
@@ -61,6 +67,7 @@
                 snackbar: false,
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
+                balance: 0,
             }
         },
         created() {
@@ -107,11 +114,39 @@
         },
         computed: {
             show: function () {
-                return  this.$route.name !== 'login' &&  this.$route.name !== 'register' &&  this.$route.name !== 'forgot';
+                return this.$route.name !== 'login' && this.$route.name !== 'login token' && this.$route.name !== 'register' && this.$route.name !== 'forgot';
+            },
+            formatBalance() {
+                return String(this.balance + this.$store.getters.currency)
             }
         },
-        mounted(){
-            axios.defaults.headers.common['Authorization'] = 'Token ' + this.$session.get('jwt');
+        mounted() {
+            window.$languages = JSON.parse(document.getElementById('config').innerHTML);
+            this.$translate.setLocales(window.$languages.locale);
+            console.log(localStorage.currentLanguage,'lng')
+            if (localStorage.currentLanguage) {
+                window.$currentLanguage = localStorage.currentLanguage;
+                this.$translate.setLang(window.$currentLanguage);
+                this.$vuetify.rtl = window.$languages.locale[window.$currentLanguage].rtl;
+            }else{
+                window.$currentLanguage = 'english';
+                this.$translate.setLang(window.$currentLanguage);
+                this.$vuetify.rtl = window.$languages.locale[window.$currentLanguage].rtl;
+            }
+            if(this.$session.get('jwt')){
+               axios.defaults.headers.common['Authorization'] = 'Token ' + this.$session.get('jwt');
+               axios.get(`${this.$hostname}/api/balance/`)
+                   .then((response) => {
+                       console.log(response)
+                       if (response.status === 200) {
+                           this.balance = response.data.balance;
+                       }
+                   }).catch((error) => {
+                   this.text = "Connection error";
+                   console.log(error)
+                   this.snackbar = true;
+               });
+           }
         }
     }
 </script>

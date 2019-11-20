@@ -6,24 +6,24 @@
                     :timeout="timeout"
                     top
             >
-                {{ text }}
+                {{ t(text) }}
                 <v-btn
                         flat
                         @click="snackbar = false"
                 >
-                    Close
+                    {{t('Close')}}
                 </v-btn>
             </v-snackbar>
 
             <v-layout row wrap justify-center class="d-inline-block w-100">
                 <v-card>
                     <v-card-title>
-                        Resellers
+                        {{t('Resellers')}}
                         <v-spacer></v-spacer>
                         <v-text-field
                                 v-model="search"
                                 append-icon="search"
-                                label="Search"
+                                :label='t("Search")'
                                 single-line
                                 hide-details
                         ></v-text-field>
@@ -35,6 +35,8 @@
                             class="elevation-1"
                             :loading="loading"
                             :search="search"
+                            :rows-per-page-text="t('Rows per page')"
+                            :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                     >
                         <template slot="items" slot-scope="props">
                             <td class="text-xs-left no-wrap">{{ props.item.username}}
@@ -46,10 +48,10 @@
                                     <template v-slot:activator="{ on }">
                                         <v-btn v-on="on" :to="`/resellers/${props.item.pk}/details/`" color="info"
                                                small icon ripple dark>
-                                            <v-icon small>info</v-icon>
+                                            <v-icon small>{{t('info')}}</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>Detail</span>
+                                    <span>{{t('Detail')}}</span>
                                 </v-tooltip>
                                 <v-tooltip bottom v-if="$session.get('isSuperuser')">
                                     <template v-slot:activator="{ on }">
@@ -57,11 +59,16 @@
                                             <v-icon small>edit</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>Edit</span>
+                                    <span>{{t('Edit')}}</span>
                                 </v-tooltip>
                             </td>
                         </template>
-
+                        <template slot="pageText" slot-scope="item">
+                            {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                        </template>
+                        <template slot="no-data">
+                            <v-subheader>{{t('No data available')}}</v-subheader>
+                        </template>
                     </v-data-table>
                 </v-card>
             </v-layout>
@@ -79,14 +86,14 @@
                 dialog: false,
                 headers: [
                     {
-                        text: 'Username',
+                        text: this.$translate.locale['Username'],
                         align: 'left',
                         //  sortable: false,
                         value: 'username',
                     },
-                    {text: 'Email', value: 'email'},
-                    {text: 'Balance', value: 'balance'},
-                    {text: 'Action', value: 'action', sortable: false},
+                    {text: this.$translate.locale['Email'], value: 'email'},
+                    {text: this.$translate.locale['Balance'], value: 'balance'},
+                    {text: this.$translate.locale['Action'], value: 'action', sortable: false},
                 ],
                 subscribers: [],
                 loading: true,
@@ -95,10 +102,10 @@
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 rules: {
-                    required: value => !!value || 'Required.',
+                    required: value => !!value || this.$translate.locale['Required.'],
                     email: value => {
                         const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                        return pattern.test(value) || 'Invalid e-mail.'
+                        return pattern.test(value) || this.$translate.locale['Invalid e-mail.']
                     },
                 }
             }

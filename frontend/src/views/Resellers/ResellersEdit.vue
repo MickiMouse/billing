@@ -6,12 +6,12 @@
                     :timeout="timeout"
                     top
             >
-                {{ text }}
+                {{ t(text) }}
                 <v-btn
                         flat
                         @click="snackbar = false"
                 >
-                    Close
+                    {{t('Close')}}
                 </v-btn>
             </v-snackbar>
             <v-layout
@@ -25,22 +25,21 @@
                     >
                         <v-form ref="form" @submit.prevent="">
                             <v-list two-line subheader dense>
-                                <v-subheader>Details
-                                    <v-dialog v-model="deleteDialog" persistent max-width="290">
+                                <v-subheader>{{t('Details')}}
+                                    <v-dialog v-model="deleteDialog" max-width="290">
                                         <template v-slot:activator="{ on }">
                                             <v-btn color="error" v-on="on" small icon ripple class="ml-auto mr-0">
                                                 <v-icon small>delete</v-icon>
                                             </v-btn>
                                         </template>
                                         <v-card>
-                                            <v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>
-                                            <v-card-text>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,
-                                                consectetur adipisicing elit. Quam, similique.
+                                            <v-card-title class="headline">{{t('Are you sure you want to delete?')}}</v-card-title>
+                                            <v-card-text>{{t('This action cannot be undone')}}
                                             </v-card-text>
                                             <v-card-actions>
                                                 <v-spacer></v-spacer>
-                                                <v-btn small color="error" @click="deleteDialog = false">Close</v-btn>
-                                                <v-btn outline small color="error" @click="deleteSubscriber">Delete
+                                                <v-btn small color="error" @click="deleteDialog = false">{{t('Close')}}</v-btn>
+                                                <v-btn outline small color="error" @click="deleteSubscriber">{{t('Delete')}}
                                                 </v-btn>
                                             </v-card-actions>
                                         </v-card>
@@ -55,7 +54,7 @@
                                         <v-icon class="grey lighten-1 white--text">person</v-icon>
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
-                                        <v-list-tile-title>Username</v-list-tile-title>
+                                        <v-list-tile-title>{{t('Username')}}</v-list-tile-title>
                                         <p class="mb-0">{{details.username}}
                                         </p>
                                     </v-list-tile-content>
@@ -70,7 +69,7 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Cards prefix"
+                                                :label='t("Cards prefix")'
                                                 type="number"
                                                 :rules="[rules.rrrCounter,rules.number,rules.required,rules.checkAdminZeros]"
                                                 v-model="details.rrr"></v-text-field>
@@ -84,7 +83,7 @@
                                         <v-icon class="grey lighten-1 white--text">mail</v-icon>
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
-                                        <v-list-tile-title>Email</v-list-tile-title>
+                                        <v-list-tile-title>{{t('Email')}}</v-list-tile-title>
                                         <p class="mb-0">{{details.email}}</p>
                                     </v-list-tile-content>
                                 </v-list-tile>
@@ -97,13 +96,13 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="First name"
+                                                :label='t("First name")'
                                                 type="text"
                                                 v-model="details.first_name"></v-text-field>
                                     </v-list-tile-content>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Last name"
+                                                :label='t("Last name")'
                                                 type="text"
                                                 v-model="details.last_name"></v-text-field>
                                     </v-list-tile-content>
@@ -116,8 +115,8 @@
                                         <v-icon class="grey lighten-1 white--text">check</v-icon>
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
-                                        <v-list-tile-title>Status verification</v-list-tile-title>
-                                        <p class="mb-0">{{details.is_activated}}
+                                        <v-list-tile-title>{{t('Status verification')}}</v-list-tile-title>
+                                        <p class="mb-0">{{t(details.is_activated)}}
                                         </p>
                                     </v-list-tile-content>
                                 </v-list-tile>
@@ -131,14 +130,14 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Balance"
+                                                :label='t("Balance")'
                                                 type="number"
                                                 :rules="[rules.counter,rules.number,rules.required]"
                                                 v-model="details.balance"></v-text-field>
                                     </v-list-tile-content>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Credit"
+                                                :label='t("Credit")'
                                                 type="number"
                                                 :rules="[rules.counter,rules.numberReverse,rules.required]"
                                                 v-model="details.credit"></v-text-field>
@@ -153,7 +152,7 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Card price (materials)"
+                                                :label='t("Card price (materials)")'
                                                 type="number"
                                                 :rules="[rules.counter,rules.number,rules.required]"
                                                 v-model="details.price_card"></v-text-field>
@@ -168,7 +167,7 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Phone"
+                                                :label='t("Phone")'
                                                 type="number"
                                                 v-model="details.telephone"></v-text-field>
                                     </v-list-tile-content>
@@ -182,7 +181,7 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Address"
+                                                :label='t("Address")'
                                                 type="text"
                                                 v-model="details.address"></v-text-field>
                                     </v-list-tile-content>
@@ -196,7 +195,7 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Zone"
+                                                :label='t("Zone")'
                                                 type="text"
                                                 v-model="details.zone"></v-text-field>
                                     </v-list-tile-content>
@@ -210,13 +209,13 @@
                                     </v-list-tile-avatar>
                                     <v-list-tile-content>
                                         <v-text-field
-                                                label="Comment"
+                                                :label='t("Comment")'
                                                 type="text"
                                                 v-model="details.comment"></v-text-field>
                                     </v-list-tile-content>
                                 </v-list-tile>
                                 <v-list-tile>
-                                    <v-btn small color="primary" class="ml-auto" @click="saveResellerInformation">Save
+                                    <v-btn small color="primary" class="ml-auto" @click="saveResellerInformation">{{t('Save')}}ы
                                     </v-btn>
                                 </v-list-tile>
                             </v-list>
@@ -269,21 +268,21 @@
                 cards: [],
                 aviableCards: [],
                 rules: {
-                    counter: value => value <= 2147483647 || 'Max 2147483647',
-                    rrrCounter: value => (value <= 999 && value >= 0 && value.length <= 3) || 'Min 0 Max 999',
-                    checkAdminZeros: value => ((value !== '000' && value !== '00' && value !== '0') || this.details.is_superuser) || 'Only admins can have prefix "000"',
+                    counter: value => value <= 2147483647 || this.$translate.locale['Max 2147483647'],
+                    rrrCounter: value => (value <= 999 && value >= 0 && value.length <= 3) || this.$translate.locale['Min 0 Max 999'],
+                    checkAdminZeros: value => ((value !== '000' && value !== '00' && value !== '0') || this.details.is_superuser) || this.$translate.locale['Only admins can have prefix "000"'],
                     number: value => {
-                        const pattern = /^\d+$/;
-                        return pattern.test(value) || 'Invalid number.'
+                        const pattern = /^(?=.+)(?:[1-9]\d*|0)?(?:\.\d+)?$/;
+                        return pattern.test(value) ||this.$translate.locale['Invalid number.']
                     },
                     numberReverse: value => {
                         const pattern = /^-\d+$/;
-                        return (pattern.test(value) || value <= 0) || 'Invalid number.'
+                        return (pattern.test(value) || value <= 0) || this.$translate.locale['Invalid number.']
                     },
-                    required: value => (!!value || value === 0) || 'Required.',
+                    required: value => (!!value || value === 0) || this.$translate.locale['Required.'],
                     email: value => {
                         const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                        return pattern.test(value) || 'Invalid e-mail.'
+                        return pattern.test(value) || this.$translate.locale['Invalid e-mail.']
                     },
                 },
             }
@@ -335,7 +334,7 @@
                         address: this.details.address,
                         telephone: this.details.telephone,
                         zone: this.details.zone,
-                        balance: this.details.balance,
+                        balance: this.details.balance.replace(/,/g, '.'),
                         credit: this.details.credit,
                         price_card: this.details.price_card,
                         comment: this.details.comment

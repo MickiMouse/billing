@@ -3,13 +3,14 @@
                          app
                          fixed
                          clipped
+                         :right="this.$vuetify.rtl"
                          v-model="menuVisible">
         <v-divider/>
         <v-list dense :class="{'pt-3 mt-5': $vuetify.breakpoint.mdAndDown, 'pt-0 mt-0': $vuetify.breakpoint.lgAndUp}">
             <v-list-tile  >
                 <v-list-tile-content>
                     <v-list-tile-title>
-                        <span>Menu</span>
+                        <span>{{t('Menu')}}</span>
                     </v-list-tile-title>
                 </v-list-tile-content>
             </v-list-tile>
@@ -22,7 +23,7 @@
                     <v-icon>{{ item.icon }}</v-icon>
                 </v-list-tile-action>
                 <v-list-tile-content>
-                    <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                    <v-list-tile-title>{{ t(item.title) }}</v-list-tile-title>
                 </v-list-tile-content>
             </v-list-tile>
         </v-list>
@@ -30,6 +31,7 @@
 </template>
 
 <script>
+    import Vue from 'vue'
     import axios from 'axios';
     export default {
         name: "topPanelMenu",
@@ -44,6 +46,7 @@
                     {title: 'Cards', icon: 'card_membership', route: '/cards'},
                     {title: 'Packages', icon: 'archive', route: '/packages'},
                     {title: 'Resellers', icon: 'people', route: '/resellers'},
+                    {title: 'Activation', icon: 'people', route: '/resellersActivation'},
                     {title: 'Reports', icon: 'description', route: '/reports'},
                 ],
             }
@@ -80,6 +83,9 @@
                 }
                 return Promise.reject(error)
             })
+        },
+        mounted(){
+
         }
     }
 </script>

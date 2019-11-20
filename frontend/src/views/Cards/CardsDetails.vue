@@ -6,12 +6,12 @@
                     :timeout="timeout"
                     top
             >
-                {{ text }}
+                {{ t(text) }}
                 <v-btn
                         flat
                         @click="snackbar = false"
                 >
-                    Close
+                    {{t('Close')}}
                 </v-btn>
             </v-snackbar>
             <v-layout
@@ -24,22 +24,22 @@
                             :loading="loading"
                     >
                         <v-list two-line subheader dense>
-                            <v-subheader>Details
-                                <v-dialog v-if="this.details.status !== 'Active'" v-model="deleteDialog" persistent max-width="290">
+                            <v-subheader>
+                                {{t('Details')}}
+                                <v-dialog v-if="this.details.status !== 'Active'" v-model="deleteDialog" max-width="290">
                                     <template v-slot:activator="{ on }">
                                         <v-btn color="error" v-on="on" small icon ripple class="ml-auto mr-0">
                                             <v-icon small>delete</v-icon>
                                         </v-btn>
                                     </template>
                                     <v-card>
-                                        <v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>
-                                        <v-card-text>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur
-                                            adipisicing elit. Quam, similique.
+                                        <v-card-title class="headline">{{t('Are you sure you want to delete?')}}</v-card-title>
+                                        <v-card-text>{{t('This action cannot be undone')}}
                                         </v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
-                                            <v-btn small color="error" @click="deleteDialog = false">Close</v-btn>
-                                            <v-btn outline small color="error" @click="deleteSubscriber">Delete</v-btn>
+                                            <v-btn small color="error" @click="deleteDialog = false">{{t('Close')}}</v-btn>
+                                            <v-btn outline small color="error" @click="deleteSubscriber">{{t('Delete')}}</v-btn>
                                         </v-card-actions>
                                     </v-card>
                                 </v-dialog>
@@ -52,7 +52,7 @@
                                     <v-icon class="grey lighten-1 white--text">folder_special</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Label</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Label')}}</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.label}}
                                     </v-list-tile-sub-title>
                                 </v-list-tile-content>
@@ -65,8 +65,8 @@
                                     <v-icon class="grey lighten-1 white--text">playlist_add_check</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Status</v-list-tile-title>
-                                    <v-list-tile-sub-title>{{details.status}}</v-list-tile-sub-title>
+                                    <v-list-tile-title>{{t('Status')}}</v-list-tile-title>
+                                    <v-list-tile-sub-title>{{t(details.status)}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                                 <v-list-tile-avatar>
                                     <v-switch
@@ -84,7 +84,7 @@
                                     <v-icon class="grey lighten-1 white--text">account_balance_wallet</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Price</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Price')}}</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.price + $store.getters.currency}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -96,7 +96,7 @@
                                     <v-icon class="grey lighten-1 white--text">event_busy</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Expired date</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Expired date')}}</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.expired_date}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                                 <div :class="{'d-none': $vuetify.breakpoint.xs, '': $vuetify.breakpoint.smAndUp}"
@@ -104,7 +104,7 @@
                                      v-if="$store.getters.isPREPAYMENT && details.status !== 'Inactive'">
                                     <v-form ref="form">
                                         <v-text-field
-                                                label="Periods"
+                                                :label="t('Periods')"
                                                 class="mr-2 ml-auto"
                                                 type="number"
                                                 :rules="[rules.counter, rules.number]"
@@ -132,7 +132,7 @@
                                 <div class="d-flex align-center justify-center">
                                     <v-form ref="form">
                                         <v-text-field
-                                                label="Periods"
+                                                :label="t('Periods')"
                                                 class="mr-2 ml-auto"
                                                 type="number"
                                                 :rules="[rules.counter, rules.number]"
@@ -162,7 +162,7 @@
                                     <v-icon class="grey lighten-1 white--text">event_note</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Last change</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Last change')}}</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.last_change}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -174,7 +174,7 @@
                                     <v-icon class="grey lighten-1 white--text">insert_invitation</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Created at</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Created at')}}</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.created_at}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -187,7 +187,7 @@
                                     <v-icon class="grey lighten-1 white--text">person</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Subscriber</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Subscriber')}}</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.subscriber.email}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                                 <v-list-tile-avatar>
@@ -198,7 +198,7 @@
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Detail</span>
+                                        <span>{{t('Detail')}}</span>
                                     </v-tooltip>
                                 </v-list-tile-avatar>
                             </v-list-tile>
@@ -210,7 +210,7 @@
                                     <v-icon class="grey lighten-1 white--text">people</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Reseller</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Reseller')}}</v-list-tile-title>
                                     <v-list-tile-sub-title>{{details.reseller.email}}</v-list-tile-sub-title>
                                 </v-list-tile-content>
                                 <v-list-tile-avatar>
@@ -221,7 +221,7 @@
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Detail</span>
+                                        <span>{{t('Detail')}}</span>
                                     </v-tooltip>
                                 </v-list-tile-avatar>
                             </v-list-tile>
@@ -232,24 +232,33 @@
                             <v-text-field
                                     v-model="searchLogs"
                                     append-icon="search"
-                                    label="Search"
+                                    :label="t('Search')"
                                     single-line
                                     hide-details
                             ></v-text-field>
                         </v-card-title>
                     </v-card>
                     <v-card class="my-3" v-if="$session.get('isSuperuser')">
-                        <v-subheader>Logs</v-subheader>
+                        <v-subheader>{{t('Logs')}}</v-subheader>
                         <v-data-table
                                 :headers="headersLogs"
                                 :items="details.logs"
                                 items-per-page="5"
                                 class="elevation-1"
                                 :search="searchLogs"
+                                :rows-per-page-text="t('Rows per page')"
+                                :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
+
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.date }}</td>
                                 <td class="text-xs-left no-wrap">{{ props.item.log }}</td>
+                            </template>
+                            <template slot="pageText" slot-scope="item">
+                                {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                            </template>
+                            <template slot="no-data">
+                                <v-subheader>{{t('No data available')}}</v-subheader>
                             </template>
                         </v-data-table>
                     </v-card>
@@ -260,14 +269,14 @@
                             <v-text-field
                                     v-model="search"
                                     append-icon="search"
-                                    label="Search"
+                                    :label="t('Search')"
                                     single-line
                                     hide-details
                             ></v-text-field>
                         </v-card-title>
                     </v-card>
                     <v-card class="my-3">
-                        <v-subheader>Packages</v-subheader>
+                        <v-subheader>{{t('Packages')}}</v-subheader>
                         <v-data-table
                                 :headers="headers"
                                 :items="packages"
@@ -275,6 +284,8 @@
                                 class="elevation-1"
                                 :loading="loadingPackages"
                                 :search="search"
+                                :rows-per-page-text="t('Rows per page')"
+                                :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">
@@ -283,7 +294,7 @@
                                         <template v-slot:activator="{ on }">
                                             <v-icon small v-on="on" color="warning">add_alarm</v-icon>
                                         </template>
-                                        <span>This package will be removed on the next transaction. </span>
+                                        <span>{{t('This package will be removed on the next transaction.')}} </span>
                                     </v-tooltip>
                                 </td>
                                 <td class="text-xs-left no-wrap">{{ props.item.tariff + $store.getters.currency}}</td>
@@ -295,7 +306,7 @@
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Detail</span>
+                                        <span>{{t('Detail')}}</span>
                                     </v-tooltip>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -304,7 +315,7 @@
                                                 <v-icon small>close</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Remove now</span>
+                                        <span>{{t('Remove now')}}</span>
                                     </v-tooltip>
                                     <v-tooltip bottom v-if="!props.item.delayed">
                                         <template v-slot:activator="{ on }">
@@ -313,14 +324,20 @@
                                                 <v-icon small>alarm_off</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Remove later</span>
+                                        <span>{{t('Remove later')}}</span>
                                     </v-tooltip>
                                 </td>
                             </template>
+                            <template slot="pageText" slot-scope="item">
+                                {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                            </template>
+                            <template slot="no-data">
+                                <v-subheader>{{t('No data available')}}</v-subheader>
+                            </template>
                         </v-data-table>
                     </v-card>
-                    <v-card class="my-3">
-                        <v-subheader>Available packages</v-subheader>
+                    <v-card class="my-3" v-if="this.details.status !== 'Inactive'">
+                        <v-subheader>{{t('Available packages')}}</v-subheader>
                         <v-data-table
                                 :headers="headers"
                                 :items="aviablePackages"
@@ -328,6 +345,8 @@
                                 class="elevation-1"
                                 :loading="loadingAviablePackages"
                                 :search="search"
+                                :rows-per-page-text="t('Rows per page')"
+                                :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">
@@ -336,7 +355,7 @@
                                         <template v-slot:activator="{ on }">
                                             <v-icon small v-on="on" color="warning">add_alarm</v-icon>
                                         </template>
-                                        <span>This package will be added in the next transaction. </span>
+                                        <span>{{t('This package will be added in the next transaction.')}} </span>
                                     </v-tooltip>
                                 </td>
                                 <td class="text-xs-left no-wrap">{{ props.item.tariff + $store.getters.currency}}</td>
@@ -348,7 +367,7 @@
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Detail</span>
+                                        <span>{{t('Detail')}}</span>
                                     </v-tooltip>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -357,7 +376,7 @@
                                                 <v-icon small>add</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Add now</span>
+                                        <span>{{t('Add now')}}</span>
                                     </v-tooltip>
                                     <v-tooltip bottom v-if="!props.item.delayed">
                                         <template v-slot:activator="{ on }">
@@ -367,9 +386,15 @@
                                                 <v-icon small>add_alarm</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Add later</span>
+                                        <span>{{t('Add later')}}</span>
                                     </v-tooltip>
                                 </td>
+                            </template>
+                            <template slot="pageText" slot-scope="item">
+                                {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                            </template>
+                            <template slot="no-data">
+                                <v-subheader>{{t('No data available')}}</v-subheader>
                             </template>
                         </v-data-table>
                     </v-card>
@@ -414,24 +439,24 @@
 
                 headers: [
                     {
-                        text: 'Header',
+                        text: this.$translate.locale['Header'],
                         align: 'left',
                         //  sortable: false,
                         value: 'header',
                     },
                     {
-                        text: 'Tariff',
+                        text: this.$translate.locale['Tariff'],
                         align: 'left',
                         //  sortable: false,
                         value: 'tariff',
                     },
-                    {text: 'Action', value: 'action', sortable: false},
+                    {text: this.$translate.locale['Action'], value: 'action', sortable: false},
                     // {text: 'Calories', value: 'calories'},
                 ],
                 headersLogs: [
-                    {text: 'Date', value: 'date'},
+                    {text: this.$translate.locale['Date'], value: 'date'},
                     {
-                        text: 'Header',
+                        text: this.$translate.locale['Header'],
                         align: 'left',
                         //  sortable: false,
                         value: 'log',
@@ -442,10 +467,10 @@
                 packages: [],
                 aviablePackages: [],
                 rules: {
-                    counter: value => (value <= 2147483647 && value >= 1) || 'Min 1 and Max 2147483647',
+                    counter: value => (value <= 2147483647 && value >= 1) || this.$translate.locale['Min 1 and Max 2147483647'],
                     number: value => {
                         const pattern = /^\d+$/;
-                        return pattern.test(value) || 'Invalid number.'
+                        return pattern.test(value) || this.$translate.locale['Invalid number.']
                     },
                 },
                 deleteDialog: false,
@@ -613,9 +638,15 @@
                             this.$router.push('/cards')
                         }
                     }).catch((error) => {
-                    this.text = "Connection error";
-                    console.log(error)
-                    this.snackbar = true;
+                        if(error.response.status === 400){
+                            this.text = "3 days passed";
+                            console.log(error)
+                            this.snackbar = true;
+                        }else{
+                            this.text = "Connection error";
+                            console.log(error)
+                            this.snackbar = true;
+                        }
                 });
             },
         },

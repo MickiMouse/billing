@@ -1,7 +1,7 @@
 <template>
     <v-content color="primary">
         <v-container fluid id="main-container" grid-list-md fill-height>
-            <v-dialog v-model="addManyCards" persistent max-width="290" v-if="this.$session.get('isSuperuser')">
+            <v-dialog v-model="addManyCards" max-width="290" v-if="this.$session.get('isSuperuser')">
                 <v-form ref="formManyCards">
                     <v-card>
                         <!--<v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>-->
@@ -43,8 +43,8 @@
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn outline small color="error" @click.stop="addManyCards = false">Close</v-btn>
-                            <v-btn small text color="primary" @click.stop="applyManyCards">Add</v-btn>
+                            <v-btn outline small color="error" @click.stop="addManyCards = false">{{t('Close')}}</v-btn>
+                            <v-btn small text color="primary" @click.stop="applyManyCards">{{t('Add')}}</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-form>
@@ -72,22 +72,21 @@
                             :loading="loading"
                     >
                         <v-list two-line subheader dense>
-                            <v-subheader>Details
-                                <v-dialog v-model="deleteDialog" persistent max-width="290">
+                            <v-subheader>{{t('Details')}}
+                                <v-dialog v-model="deleteDialog" max-width="290">
                                     <template v-slot:activator="{ on }">
                                         <v-btn color="error" v-on="on" small icon ripple class="ml-auto mr-0">
                                             <v-icon small>delete</v-icon>
                                         </v-btn>
                                     </template>
                                     <v-card>
-                                        <v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>
-                                        <v-card-text>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur
-                                            adipisicing elit. Quam, similique.
+                                        <v-card-title class="headline">{{t('Are you sure you want to delete?')}}</v-card-title>
+                                        <v-card-text>{{t('This action cannot be undone')}}
                                         </v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
-                                            <v-btn small color="error" @click="deleteDialog = false">Close</v-btn>
-                                            <v-btn outline small color="error" @click="deleteSubscriber">Delete</v-btn>
+                                            <v-btn small color="error" @click="deleteDialog = false">{{t('Close')}}</v-btn>
+                                            <v-btn outline small color="error" @click="deleteSubscriber">{{t('Delete')}}</v-btn>
                                         </v-card-actions>
                                     </v-card>
                                 </v-dialog>
@@ -101,7 +100,7 @@
                                     <v-icon class="grey lighten-1 white--text">person</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Name</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Name')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.first_name}} {{details.last_name}}
                                     </p>
                                 </v-list-tile-content>
@@ -114,7 +113,7 @@
                                     <v-icon class="grey lighten-1 white--text">person</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Username</v-list-tile-title>
+                                    <v-list-tile-title>U{{t('surname')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.username}}
                                     </p>
                                 </v-list-tile-content>
@@ -128,8 +127,8 @@
                                     <v-icon class="grey lighten-1 white--text">person</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Permissions</v-list-tile-title>
-                                    <p class="mb-0">{{permissions}}
+                                    <v-list-tile-title>{{t('Permissions')}}</v-list-tile-title>
+                                    <p class="mb-0">{{t(permissions)}}
                                     </p>
                                 </v-list-tile-content>
                                 <v-list-tile-avatar>
@@ -148,7 +147,7 @@
                                     <v-icon class="grey lighten-1 white--text">branding_watermark</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Cards prefix</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Cards prefix')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.rrr}}
                                     </p>
                                 </v-list-tile-content>
@@ -161,7 +160,7 @@
                                     <v-icon class="grey lighten-1 white--text">check</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Status verification</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Status verification')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.is_activated}}
                                     </p>
                                 </v-list-tile-content>
@@ -175,43 +174,43 @@
                                     <v-icon class="grey lighten-1 white--text">account_balance_wallet</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Balance</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Balance')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.balance + $store.getters.currency}}</p>
                                 </v-list-tile-content>
-                                <v-list-tile-action>
-                                    <v-dialog v-model="dialog" persistent max-width="600px">
-                                        <template v-slot:activator="{ on }">
-                                            <v-btn icon ripple v-on="on">
-                                                <v-icon color="grey lighten-1">edit</v-icon>
-                                            </v-btn>
-                                        </template>
-                                        <v-card>
-                                            <v-card-text>
-                                                <v-container grid-list-md>
-                                                    <v-layout wrap>
+                                <!--<v-list-tile-action>-->
+                                    <!--<v-dialog v-model="dialog" max-width="600px">-->
+                                        <!--<template v-slot:activator="{ on }">-->
+                                            <!--<v-btn icon ripple v-on="on">-->
+                                                <!--<v-icon color="grey lighten-1">edit</v-icon>-->
+                                            <!--</v-btn>-->
+                                        <!--</template>-->
+                                        <!--<v-card>-->
+                                            <!--<v-card-text>-->
+                                                <!--<v-container grid-list-md>-->
+                                                    <!--<v-layout wrap>-->
 
-                                                        <v-flex xs12>
-                                                            <v-form
-                                                                    ref="form">
-                                                                <v-text-field
-                                                                        label="Balance"
-                                                                        type="number" required
-                                                                        :rules="[rules.counter, rules.number]"
-                                                                        v-model="newBalance"></v-text-field>
-                                                            </v-form>
-                                                        </v-flex>
+                                                        <!--<v-flex xs12>-->
+                                                            <!--<v-form-->
+                                                                    <!--ref="form">-->
+                                                                <!--<v-text-field-->
+                                                                        <!--label="Balance"-->
+                                                                        <!--type="number" required-->
+                                                                        <!--:rules="[rules.counter, rules.number]"-->
+                                                                        <!--v-model="newBalance"></v-text-field>-->
+                                                            <!--</v-form>-->
+                                                        <!--</v-flex>-->
 
-                                                    </v-layout>
-                                                </v-container>
-                                            </v-card-text>
-                                            <v-card-actions>
-                                                <v-spacer></v-spacer>
-                                                <v-btn color="primary" text @click="dialog = false">Close</v-btn>
-                                                <v-btn color="primary" text @click="changeBalance">Save</v-btn>
-                                            </v-card-actions>
-                                        </v-card>
-                                    </v-dialog>
-                                </v-list-tile-action>
+                                                    <!--</v-layout>-->
+                                                <!--</v-container>-->
+                                            <!--</v-card-text>-->
+                                            <!--<v-card-actions>-->
+                                                <!--<v-spacer></v-spacer>-->
+                                                <!--<v-btn color="primary" text @click="dialog = false">Close</v-btn>-->
+                                                <!--<v-btn color="primary" text @click="changeBalance">Save</v-btn>-->
+                                            <!--</v-card-actions>-->
+                                        <!--</v-card>-->
+                                    <!--</v-dialog>-->
+                                <!--</v-list-tile-action>-->
                             </v-list-tile>
                             <v-list-tile
                                     v-if="!$store.getters.isPREPAYMENT"
@@ -222,7 +221,7 @@
                                     <v-icon class="grey lighten-1 white--text">account_balance_wallet</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Credit</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Credit')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.credit + $store.getters.currency}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -234,7 +233,7 @@
                                     <v-icon class="grey lighten-1 white--text">card_membership</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Card price</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Card price')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.price_card + $store.getters.currency}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -246,7 +245,7 @@
                                     <v-icon class="grey lighten-1 white--text">mail</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Email</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Email')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.email}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -258,7 +257,7 @@
                                     <v-icon class="grey lighten-1 white--text">phone</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Phone</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Phone')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.telephone}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -270,7 +269,7 @@
                                     <v-icon class="grey lighten-1 white--text">place</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Address</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Address')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.address}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -282,7 +281,7 @@
                                     <v-icon class="grey lighten-1 white--text">place</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Zone</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Zone')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.zone}}</p>
                                 </v-list-tile-content>
                             </v-list-tile>
@@ -294,7 +293,7 @@
                                     <v-icon class="grey lighten-1 white--text">comment</v-icon>
                                 </v-list-tile-avatar>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>Comment</v-list-tile-title>
+                                    <v-list-tile-title>{{t('Comment')}}</v-list-tile-title>
                                     <p class="mb-0">{{details.comment}}
                                     </p>
                                 </v-list-tile-content>
@@ -306,24 +305,32 @@
                             <v-text-field
                                     v-model="searchLogs"
                                     append-icon="search"
-                                    label="Search"
+                                    :label='t("Search")'
                                     single-line
                                     hide-details
                             ></v-text-field>
                         </v-card-title>
                     </v-card>
                     <v-card class="my-3" v-if="$session.get('isSuperuser')">
-                        <v-subheader>Logs</v-subheader>
+                        <v-subheader>{{t('Logs')}}</v-subheader>
                         <v-data-table
                                 :headers="headersLogs"
                                 :items="details.logs"
                                 items-per-page="5"
                                 class="elevation-1"
                                 :search="searchLogs"
+                                :rows-per-page-text="t('Rows per page')"
+                                :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.date }}</td>
                                 <td class="text-xs-left no-wrap">{{ props.item.log }}</td>
+                            </template>
+                            <template slot="pageText" slot-scope="item">
+                                {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                            </template>
+                            <template slot="no-data">
+                                <v-subheader>{{t('No data available')}}</v-subheader>
                             </template>
                         </v-data-table>
                     </v-card>
@@ -334,14 +341,14 @@
                             <v-text-field
                                     v-model="search"
                                     append-icon="search"
-                                    label="Search"
+                                    :label='t("Search")'
                                     single-line
                                     hide-details
                             ></v-text-field>
                         </v-card-title>
                     </v-card>
                     <v-card class="my-3">
-                        <v-subheader>Cards</v-subheader>
+                        <v-subheader>{{t('Cards')}}</v-subheader>
                         <v-data-table
                                 :headers="headers"
                                 :items="cards"
@@ -349,6 +356,8 @@
                                 class="elevation-1"
                                 :loading="loadingCards"
                                 :search="search"
+                                :rows-per-page-text="t('Rows per page')"
+                                :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
@@ -361,7 +370,7 @@
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Detail</span>
+                                        <span>{{t('Detail')}}</span>
                                     </v-tooltip>
                                     <v-tooltip bottom v-if="props.item.status !== 'Active'">
                                         <template v-slot:activator="{ on }">
@@ -371,14 +380,20 @@
                                                 <v-icon small>close</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Remove</span>
+                                        <span>{{t('Remove')}}</span>
                                     </v-tooltip>
                                 </td>
+                            </template>
+                            <template slot="pageText" slot-scope="item">
+                                {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                            </template>
+                            <template slot="no-data">
+                                <v-subheader>{{t('No data available')}}</v-subheader>
                             </template>
                         </v-data-table>
                     </v-card>
                     <v-card class="my-3" v-if="is_permission_edit">
-                        <v-subheader>Available cards</v-subheader>
+                        <v-subheader>{{t('Available cards')}}</v-subheader>
                         <v-data-table
                                 :headers="headers"
                                 :items="aviableCards"
@@ -386,6 +401,8 @@
                                 class="elevation-1"
                                 :loading="loadingAviableCards"
                                 :search="search"
+                                :rows-per-page-text="t('Rows per page')"
+                                :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                         >
                             <template slot="items" slot-scope="props">
                                 <td class="text-xs-left no-wrap">{{ props.item.label }}</td>
@@ -398,7 +415,7 @@
                                                 <v-icon small>info</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Detail</span>
+                                        <span>{{t('Detail')}}</span>
                                     </v-tooltip>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
@@ -407,9 +424,15 @@
                                                 <v-icon small>add</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Add</span>
+                                        <span>{{t('Add')}}</span>
                                     </v-tooltip>
                                 </td>
+                            </template>
+                            <template slot="pageText" slot-scope="item">
+                                {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                            </template>
+                            <template slot="no-data">
+                                <v-subheader>{{t('No data available')}}</v-subheader>
                             </template>
                         </v-data-table>
                     </v-card>
@@ -465,18 +488,18 @@
 
                 headers: [
                     {
-                        text: 'Label',
+                        text: this.$translate.locale['Label'],
                         align: 'left',
                         //  sortable: false,
                         value: 'label',
                     },
-                    {text: 'Action', value: 'action', sortable: false},
+                    {text: this.$translate.locale['Action'], value: 'action', sortable: false},
                     // {text: 'Calories', value: 'calories'},
                 ],
                 headersLogs: [
-                    {text: 'Date', value: 'date'},
+                    {text: this.$translate.locale['Date'], value: 'date'},
                     {
-                        text: 'Header',
+                        text: this.$translate.locale['Header'],
                         align: 'left',
                         //  sortable: false,
                         value: 'log',
@@ -489,15 +512,15 @@
                 min: 1,
                 range: [],
                 rules: {
-                    counter: value => value <= 2147483647 || 'Max 2147483647',
+                    counter: value => value <= 2147483647 || this.$translate.locale['Max 2147483647'],
                     number: value => {
                         const pattern = /^\d+$/;
-                        return pattern.test(value) || 'Invalid number.'
+                        return pattern.test(value) || this.$translate.locale['Invalid number.']
                     },
-                    counterRange: value => (value <= 2147483647 && value >= 1) || 'Min 1 and Max 2147483647',
+                    counterRange: value => (value <= 2147483647 && value >= 1) || this.$translate.locale['Min 1 and Max 2147483647'],
                     numberRange: value => {
                         const pattern = /^\d+$/;
-                        return pattern.test(value) || 'Invalid number.'
+                        return pattern.test(value) || this.$translate.locale['Invalid number.']
                     },
                 },
             }
@@ -519,6 +542,52 @@
                         if (response.status === 200) {
                             console.log(response.data)
                             this.details = response.data;
+                            if(localStorage.currentLanguage === 'arabian'){
+                                this.details.logs = JSON.parse(
+                                    JSON.stringify(this.details.logs)
+                                        .replace(/(ID)/g,'هوية شخصية')
+                                        .replace(/(CARD)/g,'بطاقة')
+                                        .replace(/(LOG)/g,'سجل')
+                                        .replace(/(SUBSCRIBER)/g,'مكتتب')
+                                        .replace(/(card)/g,'بطاقة')
+                                        .replace(/(Card)/g,'بطاقة')
+                                        .replace(/(to subscriber)/g,'إلى المشترك')
+                                        .replace(/(Get)/g,'احصل على')
+                                        .replace(/(Remove)/g,'إزالة')
+                                        .replace(/(pick up the)/g,'التقط')
+                                        .replace(/(Pick up)/g,'امسك')
+                                        .replace(/(to reseller)/g,'للموزع')
+                                        .replace(/(Tie)/g,'ربطة عنق')
+                                        .replace(/(Payed)/g,'سيولي')
+                                        .replace(/(Price)/g,'السعر')
+                                        .replace(/(handed subscriber)/g,'سلم مشترك')
+                                        .replace(/(the card)/g,'بطاقة')
+                                        .replace(/(Balance)/g,'توازن')
+                                        .replace(/(Update expired date)/g,'تحديث تاريخ انتهاء الصلاحية')
+                                        .replace(/(Reseller)/g,'موزع')
+                                        .replace(/(RESELLER)/g,'موزع')
+                                        .replace(/(package)/g,'صفقة')
+                                        .replace(/(add)/g,'إضافة')
+                                        .replace(/(Add)/g,'إضافة')
+                                        .replace(/(enable)/g,'مكن')
+                                        .replace(/(disable)/g,'تعطيل')
+                                        .replace(/(suspend subscription)/g,'تعليق الاشتراك')
+                                        .replace(/(remove)/g,'إزالة')
+                                        .replace(/(Remove)/g,'إزالة')
+                                        .replace(/(from subscriber )/g,'من المشترك')
+                                        .replace(/(from reseller)/g,'من الموزع')
+                                        .replace(/(Created)/g,'خلقت')
+                                        .replace(/(Edit balance)/g,'تحرير الرصيد')
+                                        .replace(/(Deleted)/g,'تم الحذف')
+                                        .replace(/(Pick up card from reseller)/g,'التقط بطاقة من الموزع')
+                                        .replace(/(Card add to subscriber)/g,'إضافة بطاقة للمشترك')
+                                        .replace(/(New value)/g,'قيمة جديدة')
+                                        .replace(/(Remove card)/g,'أزل البطاقة')
+                                        .replace(/(Registered)/g,'مسجل')
+                                        .replace(/(Created card)/g,'بطاقة تم إنشاؤها')
+                                );
+                            }
+                            console.log(this.details.logs)
                             this.cards = this.details.cards;
                             this.aviableCards = this.details.available_cards;
                             this.loadingAviableCards = false;
@@ -602,7 +671,7 @@
                             console.log(response.data)
                             if (response.status === 200) {
                                 this.getData();
-                                this.text = `Cards from ${this.range[0]} to ${this.range[1]} were applied!`;
+                                this.text = `Cards were applied!`;
                                 this.snackbar = true;
                                 this.addManyCards = false;
                             }

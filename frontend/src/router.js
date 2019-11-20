@@ -16,16 +16,16 @@ const router = new Router({
             },
         },
         {
-            path: '/login',
-            name: 'login',
+            path: '/login/:token',
+            name: 'login token',
             component: () => import('./views/Login/Login.vue'),
             meta:{
                 title: 'Login',
             },
         },
         {
-            path: '/login/:token',
-            name: 'login token',
+            path: '/login',
+            name: 'login',
             component: () => import('./views/Login/Login.vue'),
             meta:{
                 title: 'Login',
@@ -115,6 +115,14 @@ const router = new Router({
             path: '/resellers',
             name: 'resellers',
             component: () => import('./views/Resellers/Resellers.vue'),
+            meta:{
+                title: 'Resellers',
+            },
+        },
+        {
+            path: '/resellersActivation',
+            name: 'resellers activation',
+            component: () => import('./views/Resellers/ResellersActivation.vue'),
             meta:{
                 title: 'Resellers',
             },

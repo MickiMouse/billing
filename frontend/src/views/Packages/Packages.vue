@@ -5,24 +5,24 @@
                 :timeout="timeout"
                 top
         >
-            {{ text }}
+            {{ t(text) }}
             <v-btn
                     flat
                     @click="snackbar = false"
             >
-                Close
+                {{t('Close')}}
             </v-btn>
         </v-snackbar>
         <v-container fluid id="main-container" grid-list-md>
-            <v-layout row wrap justify-center class="d-inline-block w-100">
+            <v-layout row wrap justify-center class="d-inline-block w-100 mb-5">
                 <v-card>
                     <v-card-title>
-                        Packages
+                        {{t('Packages')}}
                         <v-spacer></v-spacer>
                         <v-text-field
                                 v-model="search"
                                 append-icon="search"
-                                label="Search"
+                                :label="t('Search')"
                                 single-line
                                 hide-details
                         ></v-text-field>
@@ -34,6 +34,8 @@
                             class="elevation-1"
                             :loading="loading"
                             :search="search"
+                            :rows-per-page-text="t('Rows per page')"
+                            :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                     >
                         <template slot="items" slot-scope="props">
                             <td class="text-xs-left">{{ props.item.pk }}</td>
@@ -49,15 +51,21 @@
                                             <v-icon small>info</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>Detail</span>
+                                    <span>{{t('Detail')}}</span>
                                 </v-tooltip>
                             </td>
+                        </template>
+                        <template slot="pageText" slot-scope="item">
+                            {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                        </template>
+                        <template slot="no-data">
+                            <v-subheader>{{t('No data available')}}</v-subheader>
                         </template>
                     </v-data-table>
                 </v-card>
 
             </v-layout>
-            <v-dialog v-model="dialog" persistent max-width="600px">
+            <v-dialog v-model="dialog" max-width="600px">
                 <template v-slot:activator="{ on }">
                     <v-fab-transition v-if="$session.get('isSuperuser')">
                         <v-btn
@@ -76,7 +84,7 @@
 
                 <v-card>
                     <v-card-title>
-                        <span class="headline">Package</span>
+                        <span class="headline">{{t('Package')}}</span>
                     </v-card-title>
                     <v-card-text>
                         <v-container grid-list-md>
@@ -86,12 +94,12 @@
                                 <v-layout wrap>
 
                                     <v-flex xs12 sm6>
-                                        <v-text-field label="Header*" v-model="header"
+                                        <v-text-field :label="t('Header')+'*'" v-model="header"
                                                       :rules="[rules.required,]"></v-text-field>
                                     </v-flex>
                                     <v-flex xs12 sm6>
                                         <v-text-field
-                                                label="Tariff*"
+                                                :label="t('Tariff') + '*'"
                                                 v-model="tariff"
                                                 :rules="[rules.required,rules.number,rules.counter]"
                                         ></v-text-field>
@@ -100,12 +108,12 @@
                                 </v-layout>
                             </v-form>
                         </v-container>
-                        <small>*indicates required field</small>
+                        <small>{{t('*indicates required field')}}</small>
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn color="primary" text @click="dialog = false">Close</v-btn>
-                        <v-btn color="primary" text @click="submitPackageForm">Save</v-btn>
+                        <v-btn color="primary" text @click="dialog = false">{{t('Close')}}</v-btn>
+                        <v-btn color="primary" text @click="submitPackageForm">{{t('Save')}}</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -122,15 +130,15 @@
             return {
                 headers: [
                     {
-                        text: 'Package ID',
+                        text: this.$translate.locale['Package ID'],
                         align: 'left',
                         value: 'pk',
                     },
-                    { text: 'Header', value: 'header' },
-                    { text: 'Age limit', value: 'age_limit' },
-                    { text: 'Tariff', value: 'tariff' },
+                    { text: this.$translate.locale['Header'], value: 'header' },
+                    { text: this.$translate.locale['Age limit'], value: 'age_limit' },
+                    { text: this.$translate.locale['Tariff'], value: 'tariff' },
                     // { text: 'Price', value: 'price' },
-                    { text: 'Action', value: 'action', sortable:false },
+                    { text: this.$translate.locale['Action'], value: 'action', sortable:false },
                 ],
                 packages: [],
                 loading: true,
@@ -142,11 +150,11 @@
                 header:'',
                 tariff:'',
                 rules: {
-                    required: value => !!value || 'Required.',
-                    counter: value => value <= 2147483647 || 'Max 2147483647',
+                    required: value => !!value || this.$translate.locale['Required.'],
+                    counter: value => value <= 2147483647 || this.$translate.locale['Max 2147483647'],
                     number: value => {
                         const pattern = /^\d+$/;
-                        return pattern.test(value) || 'Invalid number.'
+                        return pattern.test(value) || this.$translate.locale['Invalid number.']
                     },
                 }
             }

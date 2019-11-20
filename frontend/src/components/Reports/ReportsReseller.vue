@@ -1,12 +1,12 @@
 <template>
     <v-card>
         <v-card-title>
-            Total {{kind}}: {{total}}
+            {{t('Total')}} {{kind}}: {{total}}
             <v-spacer></v-spacer>
             <v-text-field
                     v-model="search"
                     append-icon="search"
-                    label="Search"
+                    :label='t("Search")'
                     single-line
                     hide-details
             ></v-text-field>
@@ -18,6 +18,9 @@
                 class="elevation-1"
                 :loading="loading"
                 :search="search"
+                :rows-per-page-text="t('Rows per page')"
+                :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
+
         >
             <template slot="items" slot-scope="props">
                 <td class="text-xs-left no-wrap">{{ props.item.name }}
@@ -40,7 +43,12 @@
                     <v-icon v-else class="grey--text">remove</v-icon>
                 </td>
             </template>
-
+            <template slot="pageText" slot-scope="item">
+                {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+            </template>
+            <template slot="no-data">
+                <v-subheader>{{t('No data available')}}</v-subheader>
+            </template>
         </v-data-table>
     </v-card>
 </template>
@@ -58,12 +66,12 @@
             return {
                 headers: [
                     {
-                        text: 'Reseller',
+                        text:  this.$translate.locale['Reseller'],
                         align: 'left',
                         value: 'name',
                     },
                     {
-                        text: 'Total cards',
+                        text:  this.$translate.locale['Total cards'],
                         align: 'left',
                         value: 'total',
                     },

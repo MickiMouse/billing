@@ -6,12 +6,12 @@
                     :timeout="timeout"
                     top
             >
-                {{ text }}
+                {{ t(text) }}
                 <v-btn
                         flat
                         @click="snackbar = false"
                 >
-                    Close
+                    {{t('Close')}}
                 </v-btn>
             </v-snackbar>
             <template v-slot:activator="{ on }">
@@ -29,10 +29,10 @@
                     <v-btn icon dark @click="dialog = false">
                         <v-icon>close</v-icon>
                     </v-btn>
-                    <v-toolbar-title>Settings</v-toolbar-title>
+                    <v-toolbar-title>{{t('Settings')}}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn dark flat @click="saveSettings">Save</v-btn>
+                        <v-btn dark flat @click="saveSettings">{{t('Save')}}</v-btn>
                         <!--<v-btn color="error" flat @click="dialog = false">Выйти</v-btn>-->
                     </v-toolbar-items>
                 </v-toolbar>
@@ -41,24 +41,66 @@
                                        class="px-0"
                                        color="secondary" height="4"></v-progress-linear>
                 </template>
+                <v-list three-line subheader v-if="selector">
+                    <v-subheader>{{t('Language')}}</v-subheader>
+                    <v-list-tile avatar>
+                        <v-list-tile-content>
+                            <v-select
+                                    :items="[
+                {'text': 'English', 'value': 'english'},
+                {'text': 'Arabian', 'value': 'arabian'}
+            ]"
+                                    :label="t('Choose')"
+                                    solo
+                                    :rules="[rules.required]"
+                                    v-model="language"
+                            >
+                                <template slot='selection' slot-scope='{ item }'>
+                                    {{ t(item.text) }}
+                                </template>
+                                <template slot='item' slot-scope='{ item }'>
+                                    {{ t(item.text) }}
+                                </template>
+                            </v-select>
+                        </v-list-tile-content>
+                    </v-list-tile>
+                    <v-list-tile avatar>
+                        <v-list-tile-content>
+                            <v-text-field
+                                    :label="t('Currency')"
+                                    type="text"
+                                    :rules="[rules.currency,rules.required]"
+                                    v-model="currency"></v-text-field>
+                        </v-list-tile-content>
+                    </v-list-tile>
+
+                </v-list>
+                <v-divider></v-divider>
                 <v-form ref="form">
                     <v-list three-line subheader>
-                        <v-subheader>Payment</v-subheader>
+                        <v-subheader>{{t('Payment')}}</v-subheader>
                         <v-list-tile avatar>
                             <v-list-tile-content>
                                 <v-select
                                         :items="kind"
-                                        label="Choose"
+                                        :label="t('Choose')"
                                         solo
                                         :rules="[rules.required]"
                                         v-model="kind_payment"
-                                ></v-select>
+                                >
+                                    <template slot='selection' slot-scope='{ item }'>
+                                        {{ t(item.text) }}
+                                    </template>
+                                    <template slot='item' slot-scope='{ item }'>
+                                        {{ t(item.text) }}
+                                    </template>
+                                </v-select>
                             </v-list-tile-content>
                         </v-list-tile>
                         <v-list-tile avatar>
                             <v-list-tile-content>
                                 <v-text-field
-                                        label="Currency"
+                                        :label="t('Currency')"
                                         type="text"
                                         :rules="[rules.currency,rules.required]"
                                         v-model="currency"></v-text-field>
@@ -68,22 +110,29 @@
                     </v-list>
                     <v-divider></v-divider>
                     <v-list three-line subheader>
-                        <v-subheader>Payment period</v-subheader>
+                        <v-subheader>{{t('Payment period')}}</v-subheader>
                         <v-list-tile avatar>
                             <v-list-tile-content>
                                 <v-select
                                         :items="period"
-                                        label="Choose"
+                                        :label="t('Choose')"
                                         solo
                                         :rules="[rules.required]"
                                         v-model="kind_period"
-                                ></v-select>
+                                >
+                                    <template slot='selection' slot-scope='{ item }'>
+                                        {{ t(item.text) }}
+                                    </template>
+                                    <template slot='item' slot-scope='{ item }'>
+                                        {{ t(item.text) }}
+                                    </template>
+                                </v-select>
                             </v-list-tile-content>
                         </v-list-tile>
                         <v-list-tile avatar>
                             <v-list-tile-content>
                                 <v-text-field
-                                        label="Quantity (of payment period)"
+                                        :label="t('Quantity (of payment period)')"
                                         v-model="numberOfPeriod"
                                         type="number" required
                                         :rules="[rules.counter, rules.number]"
@@ -94,35 +143,35 @@
 
 
                     <v-divider></v-divider>
-                    <v-subheader>Server preferences:</v-subheader>
+                    <v-subheader>{{t('Server preferences:')}}</v-subheader>
                     <v-layout
                             wrap
                             px-3
                     >
                         <v-flex sm3 pr-3>
                             <v-text-field
-                                    label="Cards prefix"
+                                    :label="t('Cards prefix')"
                                     type="number"
                                     :rules="[rules.rrrCounter,rules.number,rules.required]"
                                     v-model="sssss"></v-text-field>
                         </v-flex>
                         <v-flex sm3 pr-3>
                             <v-text-field
-                                    label="Max cards"
+                                    :label="t('Max cards')"
                                     type="number"
                                     :rules="[rules.cardCounter,rules.number,rules.required]"
                                     v-model="max_cards"></v-text-field>
                         </v-flex>
                         <v-flex sm3 pr-3>
                             <v-text-field
-                                    label="Server ip"
+                                    :label="t('Server ip')"
                                     type="text"
                                     :rules="[rules.ipAddress,rules.required]"
                                     v-model="server_ip"></v-text-field>
                         </v-flex>
                         <v-flex sm3 pr-3>
                             <v-text-field
-                                    label="Server port"
+                                    :label="t('Server port')"
                                     type="number"
                                     :rules="[rules.portCounter,rules.number,rules.required]"
                                     v-model="server_port"></v-text-field>
@@ -131,12 +180,12 @@
                 </v-form>
                 <v-divider></v-divider>
                 <v-list three-line subheader>
-                    <v-subheader>Bouquets</v-subheader>
+                    <v-subheader>{{t('Bouquets')}}</v-subheader>
                     <v-list-tile avatar>
                         <v-list-tile-content class="no-flex">
                             <v-form ref="formBouquets">
                                 <v-text-field
-                                        label="Bouquets"
+                                        :label="t('Bouquets')"
                                         type="number"
                                         :rules="[rules.bouquetsCounter]"
                                         v-model="numOfBouquets"
@@ -145,7 +194,7 @@
                         </v-list-tile-content>
                         <v-list-tile-avatar>
                             <v-btn
-                                    color="warning"
+                                    color="primary"
                                     dark
                                     small
                                     ripple
@@ -159,12 +208,12 @@
                     </v-list-tile>
                 </v-list>
                 <v-list three-line subheader>
-                    <v-subheader>Synchronization</v-subheader>
+                    <v-subheader>{{t('Synchronization')}}</v-subheader>
                     <v-list-tile avatar>
                         <v-list-tile-content class="no-flex">
                             <v-form ref="formBouquets">
                                 <v-text-field
-                                        label="Periods quantity"
+                                        :label="t('Periods quantity')"
                                         type="number"
                                         :rules="[rules.counterUpdatePeriods]"
                                         v-model="counterUpdatePeriods"
@@ -173,7 +222,7 @@
                         </v-list-tile-content>
                     </v-list-tile>
                 </v-list>
-                <v-subheader>Synchronization at:</v-subheader>
+                <v-subheader>{{t('Synchronization at:')}}</v-subheader>
                 <v-layout
                         wrap
                         px-3
@@ -182,7 +231,7 @@
                         <h3 class="subheading">{{period.value}}</h3>
                     </v-flex>
                 </v-layout>
-                <v-subheader>New synchronization periods:</v-subheader>
+                <v-subheader>{{t('New synchronization periods:')}}</v-subheader>
                 <v-form class="w-100 px-3" ref="formPeriods" @submit.prevent="synchronize()">
                     <v-layout
                             wrap
@@ -203,7 +252,7 @@
                                 <template v-slot:activator="{ on }">
                                     <v-text-field
                                             v-model="updatePeriodsArrayHack[key].value"
-                                            :label="'Period ' + (key+1)"
+                                            :label="t('Period') + ' ' + (key+1)"
                                             prepend-icon="access_time"
                                             readonly
                                             v-on="on"
@@ -217,9 +266,6 @@
                                         @click:minute="updatePeriodsArrayHack[key].value = updatePeriodsArray[key].value"
                                 ></v-time-picker>
                             </v-menu>
-                        </v-flex>
-                        <v-flex xs5 sm1 pr-3 class="d-flex align-center">
-                            <v-btn type="submit" small color="primary">Save</v-btn>
                         </v-flex>
                     </v-layout>
                 </v-form>
@@ -239,15 +285,18 @@
             text: 'Oops... Something went wrong',
             timeout: 5000,
             loading: true,
-            kind: [{'text': 'Virtual balance', 'value': 'VIRTUAL'}, {
-                'text': 'Prepayment',
-                'value': 'PREPAYMENT'
-            }],
+            selector:false,
+            language: localStorage.currentLanguage,
+            kind: [
+                {'text': 'Virtual balance', 'value': 'VIRTUAL'},
+                {'text': 'Prepayment', 'value': 'PREPAYMENT'}
+            ],
             currency: '',
-            period: [{'text': 'Days', 'value': 'DAYS'}, {'text': 'Weeks', 'value': 'WEEKS'}, {
-                'text': 'Months',
-                'value': 'MONTHS'
-            }],
+            period: [
+                {'text': 'Days', 'value': 'DAYS'},
+                {'text': 'Weeks', 'value': 'WEEKS'},
+                {'text': 'Months', 'value': 'MONTHS'}
+                ],
             updatePeriodsArray: [{}, {}, {}, {}, {}, {}, {}, {}],
             updatePeriodsArrayHack: [{}, {}, {}, {}, {}, {}, {}, {}],
             counterUpdatePeriods: 1,
@@ -259,22 +308,22 @@
             server_ip: '',
             server_port: '',
             rules: {
-                required: value => !!value || 'Required.',
-                counter: value => value <= 100 || 'Max 100',
-                currency: value => value.length <= 100 || "Max 100 characters",
-                counterUpdatePeriods: value => (value <= 8 && value >= 1) || 'Min 1 Max 8',
-                bouquetsCounter: value => (value <= 128 && value >= 1) || 'Min 1 Max 128',
+                required: value => !!value || this.$translate.locale['Required.'],
+                counter: value => value <= 100 || this.$translate.locale['Max 100'],
+                currency: value => value.length <= 100 || this.$translate.locale["Max 100 characters"],
+                counterUpdatePeriods: value => (value <= 8 && value >= 1) || this.$translate.locale['Min 1 Max 8'],
+                bouquetsCounter: value => (value <= 128 && value >= 1) || this.$translate.locale['Min 1 Max 128'],
                 number: value => {
                     const pattern = /^\d+$/;
-                    return pattern.test(value) || 'Invalid number.'
+                    return pattern.test(value) || this.$translate.locale['Invalid number.']
                 },
-                rrrCounter: value => (value <= 99999 && value >= 0 && value.length <= 5) || 'Min 0 Max 99999',
-                cardCounter: value => (value <= 100000 && value >= 0) || 'Min 0 Max 100000',
+                rrrCounter: value => (value <= 99999 && value >= 0 && value.length <= 5) || this.$translate.locale['Min 0 Max 99999'],
+                cardCounter: value => (value <= 100000 && value >= 0) || this.$translate.locale['Min 0 Max 100000'],
                 ipAddress: value => {
                     const pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-                    return pattern.test(value) || 'Invalid id address'
+                    return pattern.test(value) || this.$translate.locale['Invalid id address']
                 },
-                portCounter: value => (value <= 65535 && value >= 0) || 'Min 0 Max 65535',
+                portCounter: value => (value <= 65535 && value >= 0) || this.$translate.locale['Min 0 Max 65535'],
             },
             sssss: '00000',
             numOfBouquets: 1,
@@ -366,7 +415,8 @@
                         console.log(error)
                         this.snackbar = true;
                         this.dialog = false;
-                    })
+                    });
+                    this.synchronize();
                 }
             },
             updateBouquets() {
@@ -415,7 +465,27 @@
         beforeMount() {
             axios.defaults.headers.common['Authorization'] = 'Token ' + this.$session.get('jwt');
             this.getData();
-        }
+            this.language = localStorage.currentLanguage;
+
+
+        },
+        mounted(){
+            window.$languages = JSON.parse(document.getElementById('config').innerHTML);
+            this.selector = window.$languages.selector;
+        },
+        watch: {
+            language: {
+                handler(newValue) {
+                    console.log(newValue)
+                    window.$currentLanguage = newValue;
+                    localStorage.currentLanguage = newValue;
+                    this.$translate.setLang(window.$currentLanguage);
+                    this.$vuetify.rtl = window.$languages.locale[window.$currentLanguage].rtl
+
+                },
+                immediate: true,
+            }
+        },
     }
 </script>
 

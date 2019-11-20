@@ -5,12 +5,12 @@
                 :timeout="timeout"
                 top
         >
-            {{ text }}
+            {{ t(text) }}
             <v-btn
                     flat
                     @click="snackbar = false"
             >
-                Close
+                {{t('Close')}}
             </v-btn>
         </v-snackbar>
         <v-container
@@ -32,49 +32,46 @@
                                 dark
                                 flat
                         >
-                            <v-toolbar-title>Login</v-toolbar-title>
+                            <v-toolbar-title>{{t('Login')}}</v-toolbar-title>
                             <v-spacer></v-spacer>
                         </v-toolbar>
-                        <v-card-text>
-                            <v-form
-                                    ref="form"
-                                    class="text-xs-right"
-                            >
+                        <v-form
+                                ref="form"
+                                class="text-xs-right"
+                                @submit.prevent="submitLoginForm"
+                        >
+                            <v-card-text>
+
                                 <v-text-field
-                                        label="Username"
+                                        :label="t('Username')"
                                         name="Username"
                                         prepend-icon="person"
                                         :rules="[rules.required, rules.username]"
                                         v-model="username"
                                 ></v-text-field>
-                                <!--<v-text-field-->
-                                        <!--label="Email"-->
-                                        <!--name="Email"-->
-                                        <!--prepend-icon="person"-->
-                                        <!--:rules="[rules.required,rules.email]"-->
-                                        <!--v-model="email"-->
-                                <!--&gt;</v-text-field>-->
 
                                 <v-text-field
                                         id="password"
-                                        label="Password"
+                                        :label="t('Password')"
                                         name="password"
                                         prepend-icon="lock"
                                         type="password"
                                         v-model="password"
                                         :rules="[rules.required,rules.counter]"
                                 ></v-text-field>
-                            </v-form>
-                        </v-card-text>
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn color="primary" @click.prevent="submitLoginForm" :loading="verifyRegisterLoading">Login</v-btn>
-                        </v-card-actions>
-                        <v-card-text class="d-flex justify-content-between mt-2">
-                            <router-link class="text-xs-left" to="/register">Register now!</router-link>
-                            <router-link class="text-xs-right" to="/forgot">Forgot Password?</router-link>
-                        </v-card-text>
+
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="primary" type="submit" :loading="verifyRegisterLoading">{{t('Login')}}</v-btn>
+                            </v-card-actions>
+                            <v-card-text class="d-flex justify-content-between mt-2">
+                                <router-link class="text-xs-left" to="/register">{{t('Register now!')}}</router-link>
+                                <router-link class="text-xs-right" to="/forgot">{{t('Forgot Password?')}}</router-link>
+                            </v-card-text>
+                        </v-form>
                     </v-card>
+
                 </v-flex>
             </v-layout>
         </v-container>
@@ -95,14 +92,14 @@
                 username: '',
                 email: '',
                 password: '',
-                verifyRegisterLoading:false,
+                verifyRegisterLoading: false,
                 rules: {
-                    required: value => !!value || 'Required.',
-                    username: value => (value.length >= 4 && value.length <= 150) || 'Username between the 4 - 150 characters',
-                    counter: value => value.length >= 8 || 'Min 8 characters',
+                    required: value => !!value || this.$translate.locale['Required.'],
+                    username: value => (value.length >= 4 && value.length <= 150) || this.$translate.locale['Username between the 4 - 150 characters'],
+                    counter: value => value.length >= 8 || this.$translate.locale['Min 8 characters'],
                     email: value => {
                         const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                        return pattern.test(value) || 'Invalid e-mail.'
+                        return pattern.test(value) || this.$translate.locale['Invalid e-mail.']
                     },
                 },
             }
@@ -115,7 +112,7 @@
                 } else {
                     const data = {
                         crossdomain: true,
-                       // email: this.email,
+                        // email: this.email,
                         password: this.password,
                         username: this.username
                     };
@@ -141,11 +138,11 @@
 
             }
         },
-        beforeCreate(){
+        beforeCreate() {
             this.$session.destroy();
             this.$router.push('/');
             axios.defaults.headers.common['Authorization'] = '';
-            if(this.$route.params.token){
+            if (this.$route.params.token) {
                 this.verifyRegisterLoading = true;
                 axios.get(`${this.$hostname}/api/register_activate/${this.$route.params.token}/`)
                     .then((response) => {

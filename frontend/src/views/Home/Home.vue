@@ -58,11 +58,11 @@
                 selection: 'one_year',
 
                 series: [{
-                    name: 'Cards',
+                    name:  this.$translate.locale['Cards'],
                     data: []
                 },
                     {
-                        name: 'Subscribers',
+                        name: this.$translate.locale['Subscribers'],
                         data: []
                     }],
                 chartOptions: {

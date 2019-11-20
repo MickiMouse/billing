@@ -3,11 +3,11 @@
         <v-card>
             <v-card-text>
                 <v-autocomplete
-                        label="Subscribers"
+                        :label='t("Subscribers")'
                         :items="names"
                         v-model="email"
                 ></v-autocomplete>
-                <v-btn color="primary ml-auto" @click.prevent="getLogs" text>Send</v-btn>
+                <v-btn color="primary ml-auto" @click.prevent="getLogs" text>{{t('Send')}}</v-btn>
             </v-card-text>
         </v-card>
         <v-card class="mt-3">
@@ -15,25 +15,34 @@
                 <v-text-field
                         v-model="searchLogs"
                         append-icon="search"
-                        label="Search"
+                        :label='t("Search")'
                         single-line
                         hide-details
                 ></v-text-field>
             </v-card-title>
         </v-card>
         <v-card class="my-3">
-            <v-subheader>Logs</v-subheader>
+            <v-subheader>{{t('Logs')}}</v-subheader>
             <v-data-table
+                    :rows-per-page-text="t('Rows per page')"
+
                     :headers="headersLogs"
                     :items="logs"
                     items-per-page="5"
                     class="elevation-1"
                     :search="searchLogs"
                     :loading="loading"
+                    :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
             >
                 <template slot="items" slot-scope="props">
                     <td class="text-xs-left no-wrap">{{ props.item.date }}</td>
                     <td class="text-xs-left no-wrap">{{ props.item.log }}</td>
+                </template>
+                <template slot="pageText" slot-scope="item">
+                    {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                </template>
+                <template slot="no-data">
+                    <v-subheader>{{t('No data available')}}</v-subheader>
                 </template>
             </v-data-table>
         </v-card>
@@ -58,9 +67,9 @@
                 names: [],
                 searchLogs: '',
                 headersLogs: [
-                    {text: 'Date', value: 'date'},
+                    {text: this.$translate.locale['Date'], value: 'date'},
                     {
-                        text: 'Header',
+                        text: this.$translate.locale['Header'],
                         align: 'left',
                         //  sortable: false,
                         value: 'log',

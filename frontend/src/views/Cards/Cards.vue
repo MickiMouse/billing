@@ -5,16 +5,16 @@
                 :timeout="timeout"
                 top
         >
-            {{ text }}
+            {{ t(text) }}
             <v-btn
                     flat
                     @click="snackbar = false"
             >
-                Close
+                {{t('Close')}}
             </v-btn>
         </v-snackbar>
         <v-container fluid id="main-container" grid-list-md>
-            <v-dialog v-model="addManyCards" persistent max-width="290" v-if="this.$session.get('isSuperuser')">
+            <v-dialog v-model="addManyCards" max-width="290" v-if="this.$session.get('isSuperuser')">
                 <v-form ref="form">
                     <v-card>
                         <!--<v-card-title class="headline">Lorem ipsum dolor sit.</v-card-title>-->
@@ -56,21 +56,21 @@
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn outline small color="error" @click.stop="addManyCards = false">Close</v-btn>
-                            <v-btn small text color="primary" @click.stop="createManyCards">Add</v-btn>
+                            <v-btn outline small color="error" @click.stop="addManyCards = false">{{t('Close')}}</v-btn>
+                            <v-btn small text color="primary" @click.stop="createManyCards">{{t('Add')}}</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-form>
             </v-dialog>
-            <v-layout row wrap justify-center class="d-inline-block w-100">
+            <v-layout row wrap justify-center class="d-inline-block w-100 mb-5">
                 <v-card>
                     <v-card-title>
-                        Cards
+                        {{t('Cards')}}
                         <v-spacer></v-spacer>
                         <v-text-field
                                 v-model="search"
                                 append-icon="search"
-                                label="Search"
+                                :label="t('Search')"
                                 single-line
                                 hide-details
                         ></v-text-field>
@@ -82,6 +82,8 @@
                             class="elevation-1"
                             :loading="loading"
                             :search="search"
+                            :rows-per-page-text="t('Rows per page')"
+                            :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                     >
                         <template slot="items" slot-scope="props">
                             <td class="text-xs-left">{{ props.item.pk }}</td>
@@ -89,7 +91,7 @@
                             <td class="text-xs-left">{{ props.item.created_at }}</td>
                             <td class="text-xs-left">{{ props.item.last_change }}</td>
                             <td class="text-xs-left">{{ props.item.expired_date }}</td>
-                            <td class="text-xs-left">{{ props.item.status }}</td>
+                            <td class="text-xs-left">{{ t(props.item.status) }}</td>
                             <!--<td class="text-xs-left">{{ props.item.price }}</td>-->
                             <td class="text-xs-left">
                                 <v-tooltip bottom>
@@ -99,9 +101,15 @@
                                             <v-icon small>info</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>Detail</span>
+                                    <span>{{t('Detail')}}</span>
                                 </v-tooltip>
                             </td>
+                        </template>
+                        <template slot="pageText" slot-scope="item">
+                            {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                        </template>
+                        <template slot="no-data">
+                            <v-subheader>{{t('No data available')}}</v-subheader>
                         </template>
                     </v-data-table>
                 </v-card>
@@ -149,19 +157,6 @@
                     <v-icon>playlist_add</v-icon>
                 </v-btn>
             </v-speed-dial>
-            <!--<v-fab-transition >-->
-            <!--<v-btn-->
-            <!--color="primary"-->
-            <!--dark-->
-            <!--fixed-->
-            <!--bottom-->
-            <!--right-->
-            <!--fab-->
-            <!--@click="createCard"-->
-            <!--&gt;-->
-            <!--<v-icon>add</v-icon>-->
-            <!--</v-btn>-->
-            <!--</v-fab-transition>-->
         </v-container>
     </v-content>
 
@@ -176,17 +171,17 @@
             return {
                 headers: [
                     {
-                        text: 'Card ID',
+                        text: this.$translate.locale['Card ID'],
                         align: 'left',
                         value: 'pk',
                     },
-                    {text: 'Card Label', value: 'label'},
-                    {text: 'Issued', value: 'created_at'},
-                    {text: 'Edited', value: 'last_change'},
-                    {text: 'Expired', value: 'expired_date'},
-                    {text: 'Status', value: 'status'},
+                    {text: this.$translate.locale['Card Label'], value: 'label'},
+                    {text: this.$translate.locale['Issued'], value: 'created_at'},
+                    {text: this.$translate.locale['Edited'], value: 'last_change'},
+                    {text: this.$translate.locale['Expired'], value: 'expired_date'},
+                    {text: this.$translate.locale['Status'], value: 'status'},
                     // { text: 'Price', value: 'price' },
-                    {text: 'Action', value: 'action', sortable: false},
+                    {text: this.$translate.locale['Action'], value: 'action', sortable: false},
                 ],
                 cards: [],
                 loading: true,
@@ -200,10 +195,10 @@
                 min: 0,
                 range: [],
                 rules: {
-                    counter: value => (value <= 2147483647 && value >= 1) || 'Min 1 and Max 2147483647',
+                    counter: value => (value <= 2147483647 && value >= 1) || this.$translate.locale['Min 1 and Max 2147483647'],
                     number: value => {
                         const pattern = /^\d+$/;
-                        return pattern.test(value) || 'Invalid number.'
+                        return pattern.test(value) || this.$translate.locale['Invalid number.']
                     },
                 },
             }
@@ -254,7 +249,7 @@
                             console.log(response.data)
                             if (response.status === 201) {
                                 this.getData();
-                                this.text = `Cards from ${this.range[0]} to ${this.range[1]} were created!`;
+                                this.text = `Cards were created!`;
                                 this.snackbar = true;
                                 this.addManyCards = false;
                             }

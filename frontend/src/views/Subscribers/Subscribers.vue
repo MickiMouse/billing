@@ -6,23 +6,23 @@
                     :timeout="timeout"
                     top
             >
-                {{ text }}
+                {{ t(text) }}
                 <v-btn
                         flat
                         @click="snackbar = false"
                 >
-                    Close
+                    {{t('Close')}}
                 </v-btn>
             </v-snackbar>
-            <v-layout row wrap justify-center class="d-inline-block w-100">
+            <v-layout row wrap justify-center class="d-inline-block w-100 mb-5">
                <v-card>
                    <v-card-title>
-                       Subscribers
+                       {{t('Subscribers')}}
                        <v-spacer></v-spacer>
                        <v-text-field
                                v-model="search"
                                append-icon="search"
-                               label="Search"
+                               :label="t('Search')"
                                single-line
                                hide-details
                        ></v-text-field>
@@ -35,6 +35,8 @@
                            :loading="loading"
                            :search="search"
                            v-if="!$store.getters.isPREPAYMENT"
+                           :rows-per-page-text="t('Rows per page')"
+                           :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                    >
                        <template slot="items" slot-scope="props">
                            <td class="text-xs-left no-wrap">{{ props.item.last_name + " "+
@@ -51,7 +53,7 @@
                                            <v-icon small>info</v-icon>
                                        </v-btn>
                                    </template>
-                                   <span>Detail</span>
+                                   <span>{{t('Detail')}}</span>
                                </v-tooltip>
                                <v-tooltip bottom>
                                    <template v-slot:activator="{ on }">
@@ -59,11 +61,16 @@
                                            <v-icon small>edit</v-icon>
                                        </v-btn>
                                    </template>
-                                   <span>Edit</span>
+                                   <span>{{t('Edit')}}</span>
                                </v-tooltip>
                            </td>
                        </template>
-
+                       <template slot="pageText" slot-scope="item">
+                           {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                       </template>
+                       <template slot="no-data">
+                           <v-subheader>{{t('No data available')}}</v-subheader>
+                       </template>
                    </v-data-table>
                    <v-data-table
                            :headers="headers"
@@ -72,6 +79,8 @@
                            class="elevation-1"
                            :loading="loading"
                            :search="search"
+                           :rows-per-page-text="t('Rows per page')"
+                           :rows-per-page-items='[10,25, 50, {text: $translate.locale["All"], value: -1}]'
                            v-else
                    >
                        <template slot="items" slot-scope="props">
@@ -88,7 +97,7 @@
                                            <v-icon small>info</v-icon>
                                        </v-btn>
                                    </template>
-                                   <span>Detail</span>
+                                   <span>{{t('Detail')}}</span>
                                </v-tooltip>
                                <v-tooltip bottom>
                                    <template v-slot:activator="{ on }">
@@ -96,15 +105,20 @@
                                            <v-icon small>edit</v-icon>
                                        </v-btn>
                                    </template>
-                                   <span>Edit</span>
+                                   <span>{{t('Edit')}}</span>
                                </v-tooltip>
                            </td>
                        </template>
-
+                       <template slot="pageText" slot-scope="item">
+                           {{t('Elements')}} {{item.pageStart}} - {{item.pageStop}}, {{t('total')}}: {{item.itemsLength}}
+                       </template>
+                       <template slot="no-data">
+                           <v-subheader>{{t('No data available')}}</v-subheader>
+                       </template>
                    </v-data-table>
                </v-card>
             </v-layout>
-            <v-dialog v-model="dialog" persistent max-width="600px">
+            <v-dialog v-model="dialog" max-width="600px">
                 <template v-slot:activator="{ on }">
                     <v-fab-transition>
                         <v-btn
@@ -123,7 +137,7 @@
 
                 <v-card>
                     <v-card-title>
-                        <span class="headline">User Profile</span>
+                        <span class="headline">{{t('User Profile')}}</span>
                     </v-card-title>
                     <v-card-text>
                         <v-container grid-list-md>
@@ -133,18 +147,20 @@
                                 <v-layout wrap>
 
                                     <v-flex xs12 sm6>
-                                        <v-text-field label="First name*" v-model="firstName"
+                                        <v-text-field
+                                                :label="t('First name*')" v-model="firstName"
                                                       :rules="[rules.required,]"></v-text-field>
                                     </v-flex>
                                     <v-flex xs12 sm6>
                                         <v-text-field
-                                                label="Last name*"
+                                                :label="t('Last name*')"
                                                 v-model="lastName"
                                                 :rules="[rules.required,]"
                                         ></v-text-field>
                                     </v-flex>
                                     <v-flex xs12>
-                                        <v-text-field label="Email*"
+                                        <v-text-field
+                                                :label="t('Email*')"
                                                       v-model="email"
                                                       :rules="[rules.required,rules.email]"
                                         ></v-text-field>
@@ -158,13 +174,13 @@
               () => !!address && address.length <= 50 || 'Address must be less than 50 characters',
               addressCheck
             ]"
-                                                label="Address Line"
-                                                placeholder="Address"
+                                                :label="t('Address')"
+                                                :placeholder="t('Address')"
                                                 counter="50"
                                         ></v-text-field>
                                     </v-flex>
                                     <v-flex xs12>
-                                        <v-text-field label="Phone*"
+                                        <v-text-field :label="t('Phone*')"
                                                       v-model="phone"
                                                       :rules="[rules.required,]"></v-text-field>
                                     </v-flex>
@@ -172,12 +188,12 @@
                                 </v-layout>
                             </v-form>
                         </v-container>
-                        <small>*indicates required field</small>
+                        <small>{{t('*indicates required field')}}</small>
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn color="primary" text @click="dialog = false">Close</v-btn>
-                        <v-btn color="primary" text @click="submitSubscriberForm">Save</v-btn>
+                        <v-btn color="primary" text @click="dialog = false">{{t('Close')}}</v-btn>
+                        <v-btn color="primary" text @click="submitSubscriberForm">{{t('Save')}}</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -195,15 +211,15 @@
                 dialog: false,
                 headers: [
                     {
-                        text: 'Full name',
+                        text: this.$translate.locale['Full name'],
                         align: 'left',
                         //  sortable: false,
                         value: 'last_name',
                     },
-                    {text: 'Email', value: 'email'},
-                    {text: 'Balance', value: 'balance'},
-                    {text: 'Cards', value: 'cards'},
-                    {text: 'Action', value: 'action', sortable: false},
+                    {text: this.$translate.locale['Email'], value: 'email'},
+                    {text: this.$translate.locale['Balance'], value: 'balance'},
+                    {text: this.$translate.locale['Cards'], value: 'cards'},
+                    {text: this.$translate.locale['Action'], value: 'action', sortable: false},
                 ],
                 firstName: '',
                 lastName: '',
@@ -217,10 +233,10 @@
                 text: 'Oops... Something went wrong',
                 timeout: 5000,
                 rules: {
-                    required: value => !!value || 'Required.',
+                    required: value => !!value || this.$translate.locale['Required.'],
                     email: value => {
                         const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                        return pattern.test(value) || 'Invalid e-mail.'
+                        return pattern.test(value) || this.$translate.locale['Invalid e-mail.']
                     },
                 }
             }
@@ -292,14 +308,24 @@
             if(this.$store.getters.isPREPAYMENT){
                 this.headers= [
                     {
-                        text: 'Full name',
+                        text: this.$translate.locale['Full name'],
                         align: 'left',
                         //  sortable: false,
                         value: 'last_name',
                     },
-                    {text: 'Email', value: 'email'},
-                    {text: 'Cards', value: 'cards'},
-                    {text: 'Action', value: 'action', sortable: false},
+                    {text: this.$translate.locale['Email'], value: 'email'},
+
+                    {text: this.$translate.locale['Cards'], value: 'cards'},
+                    {text: this.$translate.locale['Action'], value: 'action', sortable: false},
+                    // {
+                    //     text: 'Full name',
+                    //     align: 'left',
+                    //     //  sortable: false,
+                    //     value: 'last_name',
+                    // },
+                    // {text: 'Email', value: 'email'},
+                    // {text: 'Cards', value: 'cards'},
+                    // {text: 'Action', value: 'action', sortable: false},
                 ]
             }
         },
