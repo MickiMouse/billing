@@ -12,7 +12,7 @@ Vue.use(VueSession)
 Vue.config.productionTip = false
 Vue.use(VueApexCharts)
 Vue.component('apexchart', VueApexCharts)
-Vue.prototype.$hostname = 'http://157.230.98.28';
+Vue.prototype.$hostname = 'http://165.22.84.83';
 window.$languages = [];
 window.$currentLanguage = '';
 // Vue.prototype.$hostname = 'http://192.168.31.237:8000';
